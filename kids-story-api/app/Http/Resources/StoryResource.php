@@ -26,7 +26,7 @@ class StoryResource extends JsonResource
             'free' => (bool) $this->is_free,
 
             'pages' => StoryPageResource::collection(
-                $this->StoryPages
+                $this->pages
             ),
         ];
     }

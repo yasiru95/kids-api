@@ -18,7 +18,7 @@ class StoryController extends Controller
             'id',
             'title',
             'description',
-            'cover_image'
+            'image'
         )->get();
     }
 

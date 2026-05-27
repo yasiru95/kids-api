@@ -2,17 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Sentence extends Model
+class User extends Authenticatable
 {
+    use HasApiTokens, HasFactory, Notifiable;
+
     protected $fillable = [
-        'story_page_id',
-        'text'
+
+        'name',
+        'email',
+        'password',
+        'gender',
+
     ];
 
-    public function words()
-    {
-        return $this->hasMany(Word::class);
-    }
+    protected $hidden = [
+
+        'password',
+        'remember_token',
+
+    ];
 }

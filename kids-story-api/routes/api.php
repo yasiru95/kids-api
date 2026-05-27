@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\StoryImportController;
+use App\Http\Controllers\Api\AuthController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -18,3 +19,22 @@ Route::get('/stories', [StoryController::class, 'index']);
 Route::get('/stories/{id}', [StoryController::class, 'show']);
 
 Route::post('/stories/import', [StoryImportController::class, 'import']);
+
+Route::post(
+    '/register',
+    [AuthController::class, 'register']
+);
+
+Route::post(
+    '/login',
+    [AuthController::class, 'login']
+);
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post(
+        '/logout',
+        [AuthController::class, 'logout']
+    );
+
+});

@@ -11,6 +11,9 @@ class Sentence extends Model
         'text'
     ];
 
+  
+
+    // ✅ Sentence → Words
     public function words()
     {
         return $this->hasMany(Word::class);

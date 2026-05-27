@@ -26,4 +26,20 @@ class User extends Authenticatable
         'remember_token',
 
     ];
+
+        public function Payment()
+        {
+        return $this->hasMany(Payment::class);
+        }
+
+        public function HasActiveSubscription()
+        {
+        return $this->Payment()
+
+        ->where('status', 'paid')
+
+        ->where('end_date', '>', now())
+
+        ->exists();
+        }
 }

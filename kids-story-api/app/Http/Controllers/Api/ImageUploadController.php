@@ -31,15 +31,16 @@ class ImageUploadController extends Controller
             $images = [$images];
         }
 
-        // ✅ Create folder
-        $folderPath = public_path("uploads/stories/{$storyName}");
+       
+        // // ✅ Create folder
+        // $folderPath = public_path("uploads/stories/{$storyName}");
 
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0777, true);
-        }
+        // if (!file_exists($folderPath)) {
+        //     mkdir($folderPath, 0777, true);
+        // }
 
-        // ✅ Image Manager
-        $manager = new ImageManager(new Driver());
+        // // ✅ Image Manager
+        // $manager = new ImageManager(new Driver());
 
         $uploadedFiles = [];
 
@@ -50,23 +51,72 @@ class ImageUploadController extends Controller
             }
 
             // ✅ Read image
-            $img = $manager->read($image);
+            // $img = $manager->read($image);
 
             // Optional resize
             // $img->cover(1080, 1920);
 
             // ✅ Rename image
-            $fileName = $storyName . '-' . $index . '.webp';
+            $fileName = $storyName . '-story-image-' . ($index + 1);
+            
+            try {
 
+            // ✅ Upload to Cloudinary 
+            $uploaded = Cloudinary::uploadApi()->upload(
+            $image->getRealPath(),
+            [
+
+            'folder' => "stories/{$storyName}",
+            'public_id' => $fileName, 
+            'format' => 'webp',
+            'overwrite' => true,
+            'quality' => 'auto',
+            'fetch_format' => 'auto',
+
+            // ✅ Tags
+            'tags' => [
+            'kids-story',
+             $storyName,
+            'storybook'
+            ],
+
+            // ✅ Context metadata
+            'context' => [
+            'alt' => $request->story_name,
+            'caption' => "Story image " . ($index + 1),
+            'story' => $storyName
+            ],
+
+         
+            
+            
+            ] 
+            
+            
+            
+            );
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Upload failed: ' . $th->getMessage()
+                ], 500);
+            }
+
+
+            
+
+            // ✅ Secure URL 
+            $uploadedFiles[] = $uploaded['secure_url'];
             // Full path
-            $filePath = $folderPath . '/' . $fileName;
+            // $filePath = $folderPath . '/' . $fileName;
 
             // ✅ Save as webp
-            $img->toWebp(80)->save($filePath);
+            // $img->toWebp(80)->save($filePath);
 
             // ✅ Public URL
-            $uploadedFiles[] = url("uploads/stories/{$storyName}/{$fileName}");
+            // $uploadedFiles[] = url("uploads/stories/{$storyName}/{$fileName}");
         }
+        
 
         return response()->json([
             'status' => true,

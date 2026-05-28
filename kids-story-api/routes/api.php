@@ -7,6 +7,15 @@ use App\Http\Controllers\Api\StoryImportController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\ImageUploadController;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
+
+Route::get('/testcloudinary', function () {
+    return Cloudinary::uploadApi()->upload(
+        "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+    );
+});
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();

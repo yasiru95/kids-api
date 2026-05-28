@@ -15,6 +15,8 @@ class Story extends Model
         'is_free'
     ];
 
+    
+
     public function pages()
     {
         return $this->hasMany(StoryPage::class);

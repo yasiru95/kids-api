@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\StoryImportController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\ImageUploadController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -63,6 +64,10 @@ Route::middleware('auth:sanctum')->group(function () {
     ]);
 
 });
+
+
+
+Route::post('/upload-story-images', [ImageUploadController::class, 'upload']);
 
 
  

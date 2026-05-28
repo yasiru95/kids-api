@@ -31,4 +31,22 @@ class StoryController extends Controller
 
         return new StoryResource($story);
     }
+
+     // ✅ Filter stories by category
+    public function filterByCategory($category)
+    {
+        $stories = Story::where('category', $category)
+            ->latest()
+            ->get();
+
+        return new StoryResource($stories);
+
+
+        // return response()->json([
+        //     'status' => true,
+        //     'category' => $category,
+        //     'count' => $stories->count(),
+        //     'stories' => $stories
+        // ]);
+    }
 }

@@ -9,9 +9,80 @@ use App\Models\Story;
 use App\Models\StoryPage;
 use App\Models\Sentence;
 use App\Models\Word;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
 
 class StoryImportController extends Controller
 {
+
+    //create_story_json
+    public function create_story_json(Request $request){
+
+         // ✅ 2. Validation with proper error handling
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'story' => 'required|string|min:10',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+
+            $text = "In a bright green kingdom, there lived two royal kids.
+            Their names were Prince Leo and Princess Mia.
+            They were playful, curious, and full of dreams.";
+
+            // create SEO slug
+            $slug = Str::slug('The Adventures of Prince Leo and Princess Mia');
+
+            $response = Http::withoutVerifying()->get(
+            'https://api.voicerss.org/',
+            [
+
+            'key' => env('VOICERSS_API_KEY'),
+            'hl'  => 'en-gb',
+            'v' => 'Alice',
+            'src' => $text,
+
+            ]
+            );
+
+            if ($response->successful()) {
+
+            // create folder if not exists
+            if (!File::exists(public_path('audio'))) {
+            File::makeDirectory(public_path('audio'), 0755, true);
+            }
+
+            $filename = $slug . '-' . 'page0' ;
+
+            file_put_contents(
+            public_path('audio/' . $filename),
+            $response->body()
+            );
+
+            return response()->json([
+            'success' => true,
+            'message' => 'Audio generated successfully',
+            'audio_url' => url('audio/' . $filename)
+            ]);
+            }
+
+            return response()->json([
+            'success' => false,
+            'message' => 'Failed to generate audio'
+            ], 500);
+
+    
+
+    }
     public function import(Request $request)
     {
         $success_msg = [];

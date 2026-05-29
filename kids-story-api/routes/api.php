@@ -27,7 +27,7 @@ Route::get('/stories', [StoryController::class, 'index']);
 
 Route::get('/stories/{id}', [StoryController::class, 'show']);
 
-Route::post('/stories/import', [StoryImportController::class, 'import']);
+
 
 Route::post(
     '/register',
@@ -78,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/upload-story-images', [ImageUploadController::class, 'upload']);
 
-
+Route::post('/stories/import', [StoryImportController::class, 'import']);
+Route::post('/stories/upload-story', [StoryImportController::class, 'create_story_json']);
  
 

@@ -15,13 +15,13 @@ use Illuminate\Support\Facades\File;
 
 class StoryImportController extends Controller
 {
-
+   var $validated=null;
     //create_story_json
     public function create_story_json(Request $request){
 
          // ✅ 2. Validation with proper error handling
         try {
-            $validated = $request->validate([
+            $this->validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'story' => 'required|string|min:10',
@@ -34,55 +34,83 @@ class StoryImportController extends Controller
             ], 422);
         }
 
+        return $this->splitStoryByLines($this->validated['story']);
 
-            $text = "In a bright green kingdom, there lived two royal kids.
-            Their names were Prince Leo and Princess Mia.
-            They were playful, curious, and full of dreams.";
-
-            // create SEO slug
-            $slug = Str::slug('The Adventures of Prince Leo and Princess Mia');
-
-            $response = Http::withoutVerifying()->get(
-            'https://api.voicerss.org/',
-            [
-
-            'key' => env('VOICERSS_API_KEY'),
-            'hl'  => 'en-gb',
-            'v' => 'Alice',
-            'src' => $text,
-
-            ]
-            );
-
-            if ($response->successful()) {
-
-            // create folder if not exists
-            if (!File::exists(public_path('audio'))) {
-            File::makeDirectory(public_path('audio'), 0755, true);
-            }
-
-            $filename = $slug . '-' . 'page0' ;
-
-            file_put_contents(
-            public_path('audio/' . $filename),
-            $response->body()
-            );
-
-            return response()->json([
-            'success' => true,
-            'message' => 'Audio generated successfully',
-            'audio_url' => url('audio/' . $filename)
-            ]);
-            }
-
-            return response()->json([
-            'success' => false,
-            'message' => 'Failed to generate audio'
-            ], 500);
 
     
 
     }
+
+   public function splitStoryByLines($story, $linesPerChunk = 3)
+    {
+    //convert story to array of lines and trim whitespace
+    $lines = array_values(array_filter(array_map('trim', explode("\n", $story)))); 
+    //3lines to array chunk
+    $story_array = array_chunk($lines, $linesPerChunk);
+ 
+
+    foreach ($story_array as $index => $part) {
+    // 3 line string
+
+    $result = collect($part)
+    ->map(fn($line) => '"' . $line . '"')
+    ->implode("\n");
+    $this->create_audio($result, $index + 1);
+
+    }
+
+    return ;
+
+    }
+
+    public function create_audio( $storySentence, int $page){
+    {
+    // create SEO slug
+    $slug = Str::slug($this->validated['title']);
+
+    $response = Http::withoutVerifying()->get(
+    'https://api.voicerss.org/',
+    [
+
+    'key' => env('VOICERSS_API_KEY'),
+    'hl'  => 'en-gb',
+    'v' => 'Alice',
+    'src' => $storySentence,
+
+    ]
+    );
+
+    if ($response->successful()) {
+
+    // create folder if not exists
+    if (!File::exists(public_path('audio'))) {
+    File::makeDirectory(public_path('audio'), 0755, true);
+    }
+
+    $filename = $slug . '-page-' . $page . '.wav' ;
+
+    file_put_contents(
+    public_path('audio/' . $filename),
+    $response->body()
+    );
+
+    return response()->json([
+    'success' => true,
+    'message' => 'Audio generated successfully',
+    'audio_url' => url('audio/' . $filename)
+    ]);
+    }
+
+    return response()->json([
+    'success' => false,
+    'message' => 'Failed to generate audio'
+    ], 500);
+    }
+
+    }
+
+
+
     public function import(Request $request)
     {
         $success_msg = [];

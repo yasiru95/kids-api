@@ -12,6 +12,8 @@ use App\Models\Word;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
+use Aws\Polly\PollyClient;
+use App\Services\PollyService;
 
 class StoryImportController extends Controller
 {
@@ -32,9 +34,18 @@ class StoryImportController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
+            
         }
 
-        return $this->splitStoryByLines($this->validated['story']);
+        $result = $this->amazon_polly();
+        return response()->json([
+            'success' => true,
+            'message' => 'Story processed successfully',
+            'data' => $result
+        ]);
+
+
+        // return $this->splitStoryByLines($this->validated['story']);
 
 
     
@@ -47,6 +58,8 @@ class StoryImportController extends Controller
     $lines = array_values(array_filter(array_map('trim', explode("\n", $story)))); 
     //3lines to array chunk
     $story_array = array_chunk($lines, $linesPerChunk);
+
+    $this->amazon_polly();
  
 
     foreach ($story_array as $index => $part) {
@@ -62,6 +75,84 @@ class StoryImportController extends Controller
     return ;
 
     }
+
+    public function amazon_polly(){
+     // Create AWS Polly client
+        $polly = new PollyClient([
+            'region' => env('AWS_DEFAULT_REGION'),
+            'version' => 'latest',
+            'credentials' => [
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            ]
+        ]);
+
+        $slug = Str::slug($this->validated['title']);
+
+        // Split story into lines (3-line chunks)
+        $lines = array_values(array_filter(explode("\n", $this->validated['story'])));
+        $chunks = array_chunk($lines, 3);
+
+        $results = [];
+
+        foreach ($chunks as $index => $chunk) {
+
+            // convert 3 lines → sentence
+            $text = implode(" ", $chunk);
+            $marks = $this->generateSpeechMarks($text);
+            return response()->json([
+                'success' => true,
+                'marks' => $marks
+            ]);
+
+            // $result = $polly->synthesizeSpeech([
+            //     'Text' => $text,
+            //     'OutputFormat' => 'mp3',
+            //     'VoiceId' => 'Ruth',
+            //     'Engine' => 'long-form', 
+            
+            // ]);
+
+            // $audioStream = $result['AudioStream'];
+
+            // // folder
+            // $path = public_path("audio/{$slug}");
+
+            // if (!File::exists($path)) {
+            //     File::makeDirectory($path, 0755, true);
+            // }
+
+            // $fileName = $slug . '-page-' . ($index + 1) . '.mp3';
+
+            // file_put_contents($path . '/' . $fileName, $audioStream);
+
+            // $results[] = [
+            //     'page' => $index + 1,
+            //     'text' => $text,
+            //     'audio_url' => url("audio/{$slug}/{$fileName}")
+            // ];
+        }
+
+        // return response()->json([
+        //     'success' => true,
+        //     'title' => $this->validated['title'],
+        //     'data' => $results
+        // ]);
+    
+
+    }
+
+
+public function generateSpeechMarks(string $text)
+{
+    $polly = new PollyService();
+    $marks = $polly->synthesizeWithMarks($text);
+
+    return response()->json([
+        'success' => true,
+        'marks' => $marks
+    ]);
+}
 
     public function create_audio( $storySentence, int $page){
     {

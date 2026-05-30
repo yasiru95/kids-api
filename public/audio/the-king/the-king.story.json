@@ -1,0 +1,458 @@
+[
+    {
+        "id": 1,
+        "title": "the king",
+        "description": "the king in jungle",
+        "image": "https://sample-image-url.com/the-king-cover.webp",
+        "pages": [
+            {
+                "img": "https://sample-image-url.com/the-king-page-1.webp",
+                "audio": "http://127.0.0.1:8000/audio/the-king/the-king-page-1.mp3",
+                "sentences": [
+                    {
+                        "text": "In a bright green kingdom, there lived two royal kids.",
+                        "words": [
+                            {
+                                "text": "In",
+                                "start": 0,
+                                "end": 0.775
+                            },
+                            {
+                                "text": "a",
+                                "start": 0.775,
+                                "end": 0.837
+                            },
+                            {
+                                "text": "bright",
+                                "start": 0.837,
+                                "end": 1.187
+                            },
+                            {
+                                "text": "green",
+                                "start": 1.187,
+                                "end": 1.512
+                            },
+                            {
+                                "text": "kingdom",
+                                "start": 1.512,
+                                "end": 2.175
+                            },
+                            {
+                                "text": "there",
+                                "start": 2.175,
+                                "end": 2.375
+                            },
+                            {
+                                "text": "lived",
+                                "start": 2.375,
+                                "end": 2.662
+                            },
+                            {
+                                "text": "two",
+                                "start": 2.662,
+                                "end": 3
+                            },
+                            {
+                                "text": "royal",
+                                "start": 3,
+                                "end": 3.337
+                            },
+                            {
+                                "text": "kids",
+                                "start": 3.337,
+                                "end": 4.32
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Their names were Prince Leo and Princess Mia.",
+                        "words": [
+                            {
+                                "text": "Their",
+                                "start": 4.32,
+                                "end": 4.845
+                            },
+                            {
+                                "text": "names",
+                                "start": 4.845,
+                                "end": 5.195
+                            },
+                            {
+                                "text": "were",
+                                "start": 5.195,
+                                "end": 5.295
+                            },
+                            {
+                                "text": "Prince",
+                                "start": 5.295,
+                                "end": 5.62
+                            },
+                            {
+                                "text": "Leo",
+                                "start": 5.62,
+                                "end": 6.195
+                            },
+                            {
+                                "text": "and",
+                                "start": 6.195,
+                                "end": 6.382
+                            },
+                            {
+                                "text": "Princess",
+                                "start": 6.382,
+                                "end": 6.82
+                            },
+                            {
+                                "text": "Mia",
+                                "start": 6.82,
+                                "end": 7.66
+                            }
+                        ]
+                    },
+                    {
+                        "text": "They were playful, curious, and full of dreams.",
+                        "words": [
+                            {
+                                "text": "They",
+                                "start": 7.66,
+                                "end": 8.085
+                            },
+                            {
+                                "text": "were",
+                                "start": 8.085,
+                                "end": 8.197
+                            },
+                            {
+                                "text": "playful",
+                                "start": 8.197,
+                                "end": 8.935
+                            },
+                            {
+                                "text": "curious",
+                                "start": 8.935,
+                                "end": 9.585
+                            },
+                            {
+                                "text": "and",
+                                "start": 9.585,
+                                "end": 9.772
+                            },
+                            {
+                                "text": "full",
+                                "start": 9.772,
+                                "end": 10.022
+                            },
+                            {
+                                "text": "of",
+                                "start": 10.022,
+                                "end": 10.11
+                            },
+                            {
+                                "text": "dreams",
+                                "start": 10.11,
+                                "end": 10.61
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "img": "https://sample-image-url.com/the-king-page-2.webp",
+                "audio": "http://127.0.0.1:8000/audio/the-king/the-king-page-2.mp3",
+                "sentences": [
+                    {
+                        "text": "The kingdom was ruled by a kind old king.",
+                        "words": [
+                            {
+                                "text": "The",
+                                "start": 0,
+                                "end": 0.75
+                            },
+                            {
+                                "text": "kingdom",
+                                "start": 0.75,
+                                "end": 1.175
+                            },
+                            {
+                                "text": "was",
+                                "start": 1.175,
+                                "end": 1.362
+                            },
+                            {
+                                "text": "ruled",
+                                "start": 1.362,
+                                "end": 1.687
+                            },
+                            {
+                                "text": "by",
+                                "start": 1.687,
+                                "end": 1.875
+                            },
+                            {
+                                "text": "a",
+                                "start": 1.875,
+                                "end": 1.925
+                            },
+                            {
+                                "text": "kind",
+                                "start": 1.925,
+                                "end": 2.325
+                            },
+                            {
+                                "text": "old",
+                                "start": 2.325,
+                                "end": 2.525
+                            },
+                            {
+                                "text": "king",
+                                "start": 2.525,
+                                "end": 3.5
+                            }
+                        ]
+                    },
+                    {
+                        "text": "He always told the children to be brave and honest.",
+                        "words": [
+                            {
+                                "text": "He",
+                                "start": 3.5,
+                                "end": 4.037
+                            },
+                            {
+                                "text": "always",
+                                "start": 4.037,
+                                "end": 4.325
+                            },
+                            {
+                                "text": "told",
+                                "start": 4.325,
+                                "end": 4.562
+                            },
+                            {
+                                "text": "the",
+                                "start": 4.562,
+                                "end": 4.637
+                            },
+                            {
+                                "text": "children",
+                                "start": 4.637,
+                                "end": 5.062
+                            },
+                            {
+                                "text": "to",
+                                "start": 5.062,
+                                "end": 5.137
+                            },
+                            {
+                                "text": "be",
+                                "start": 5.137,
+                                "end": 5.275
+                            },
+                            {
+                                "text": "brave",
+                                "start": 5.275,
+                                "end": 5.675
+                            },
+                            {
+                                "text": "and",
+                                "start": 5.675,
+                                "end": 5.812
+                            },
+                            {
+                                "text": "honest",
+                                "start": 5.812,
+                                "end": 6.52
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Leo and Mia loved listening to his stories.",
+                        "words": [
+                            {
+                                "text": "Leo",
+                                "start": 6.52,
+                                "end": 7.357
+                            },
+                            {
+                                "text": "and",
+                                "start": 7.357,
+                                "end": 7.495
+                            },
+                            {
+                                "text": "Mia",
+                                "start": 7.495,
+                                "end": 7.845
+                            },
+                            {
+                                "text": "loved",
+                                "start": 7.845,
+                                "end": 8.145
+                            },
+                            {
+                                "text": "listening",
+                                "start": 8.145,
+                                "end": 8.57
+                            },
+                            {
+                                "text": "to",
+                                "start": 8.57,
+                                "end": 8.72
+                            },
+                            {
+                                "text": "his",
+                                "start": 8.72,
+                                "end": 8.857
+                            },
+                            {
+                                "text": "stories",
+                                "start": 8.857,
+                                "end": 9.357
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "img": "https://sample-image-url.com/the-king-page-3.webp",
+                "audio": "http://127.0.0.1:8000/audio/the-king/the-king-page-3.mp3",
+                "sentences": [
+                    {
+                        "text": "One morning, the king gave them a special map.",
+                        "words": [
+                            {
+                                "text": "One",
+                                "start": 0,
+                                "end": 0.837
+                            },
+                            {
+                                "text": "morning",
+                                "start": 0.837,
+                                "end": 1.312
+                            },
+                            {
+                                "text": "the",
+                                "start": 1.312,
+                                "end": 1.412
+                            },
+                            {
+                                "text": "king",
+                                "start": 1.412,
+                                "end": 1.687
+                            },
+                            {
+                                "text": "gave",
+                                "start": 1.687,
+                                "end": 1.925
+                            },
+                            {
+                                "text": "them",
+                                "start": 1.925,
+                                "end": 2.125
+                            },
+                            {
+                                "text": "a",
+                                "start": 2.125,
+                                "end": 2.175
+                            },
+                            {
+                                "text": "special",
+                                "start": 2.175,
+                                "end": 2.575
+                            },
+                            {
+                                "text": "map",
+                                "start": 2.575,
+                                "end": 3.34
+                            }
+                        ]
+                    },
+                    {
+                        "text": "It showed a hidden treasure deep in the forest.",
+                        "words": [
+                            {
+                                "text": "It",
+                                "start": 3.34,
+                                "end": 3.827
+                            },
+                            {
+                                "text": "showed",
+                                "start": 3.827,
+                                "end": 4.14
+                            },
+                            {
+                                "text": "a",
+                                "start": 4.14,
+                                "end": 4.215
+                            },
+                            {
+                                "text": "hidden",
+                                "start": 4.215,
+                                "end": 4.552
+                            },
+                            {
+                                "text": "treasure",
+                                "start": 4.552,
+                                "end": 4.965
+                            },
+                            {
+                                "text": "deep",
+                                "start": 4.965,
+                                "end": 5.277
+                            },
+                            {
+                                "text": "in",
+                                "start": 5.277,
+                                "end": 5.365
+                            },
+                            {
+                                "text": "the",
+                                "start": 5.365,
+                                "end": 5.44
+                            },
+                            {
+                                "text": "forest",
+                                "start": 5.44,
+                                "end": 6.36
+                            }
+                        ]
+                    },
+                    {
+                        "text": "The children\u2019s eyes sparkled with excitement.",
+                        "words": [
+                            {
+                                "text": "The",
+                                "start": 6.36,
+                                "end": 7.135
+                            },
+                            {
+                                "text": "children\u2019s",
+                                "start": 7.135,
+                                "end": 7.61
+                            },
+                            {
+                                "text": "eyes",
+                                "start": 7.61,
+                                "end": 7.885
+                            },
+                            {
+                                "text": "sparkled",
+                                "start": 7.885,
+                                "end": 8.372
+                            },
+                            {
+                                "text": "with",
+                                "start": 8.372,
+                                "end": 8.497
+                            },
+                            {
+                                "text": "excitement",
+                                "start": 8.497,
+                                "end": 8.997
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

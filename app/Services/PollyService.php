@@ -23,7 +23,9 @@ class PollyService
             'VoiceId' => 'Ruth',
             'Engine' => 'long-form', 
             'TextType' => 'text',
-            'SpeechMarkTypes' => ['word', 'sentence']
+            'SpeechMarkTypes' => ['word']
+
+            // 'SpeechMarkTypes' => ['word', 'sentence']
         ]);
 
         $stream = $result['AudioStream'];

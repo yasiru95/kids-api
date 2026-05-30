@@ -80,5 +80,6 @@ Route::post('/upload-story-images', [ImageUploadController::class, 'upload']);
 
 Route::post('/stories/import', [StoryImportController::class, 'import']);
 Route::post('/stories/upload-story', [StoryImportController::class, 'create_story_json']);
+Route::post('/stories/generate-story', [StoryImportController::class, 'generateStoryJSON']);    
  
 

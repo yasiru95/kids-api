@@ -17,6 +17,265 @@ use App\Services\PollyService;
 
 class StoryImportController extends Controller
 {
+
+ public function generateStoryJSON(Request $request)
+    {
+        
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'story' => 'required|string|min:10',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | AWS POLLY CLIENT
+        |--------------------------------------------------------------------------
+        */
+
+        $polly = new PollyClient([
+            'region' => env('AWS_DEFAULT_REGION'),
+            'version' => 'latest',
+            'credentials' => [
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            ]
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | STORY SETUP
+        |--------------------------------------------------------------------------
+        */
+
+        $slug = Str::slug($validated['title']);
+
+        // Split story by lines
+        $lines = array_values(array_filter(
+            array_map('trim', explode("\n", $validated['story']))
+        ));
+
+        // Every 3 lines = 1 page
+        $chunks = array_chunk($lines, 3);
+
+        /*
+        |--------------------------------------------------------------------------
+        | MAIN STORY JSON
+        |--------------------------------------------------------------------------
+        */
+
+        $story = [
+            'id' => 1,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'image' => 'https://sample-image-url.com/' . $slug . '-cover.webp',
+            'pages' => []
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | AUDIO FOLDER
+        |--------------------------------------------------------------------------
+        */
+
+        $folder = public_path("audio/$slug");
+
+        if (!File::exists($folder)) {
+            File::makeDirectory($folder, 0755, true);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOOP PAGES
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($chunks as $pageIndex => $chunk) {
+
+            $pageNumber = $pageIndex + 1;
+
+            /*
+            |--------------------------------------------------------------------------
+            | PAGE TEXT
+            |--------------------------------------------------------------------------
+            */
+
+            $pageText = implode(" ", $chunk);
+
+            /*
+            |--------------------------------------------------------------------------
+            | GENERATE AUDIO MP3
+            |--------------------------------------------------------------------------
+            */
+
+            $audioResult = $polly->synthesizeSpeech([
+                'Text' => $pageText,
+                'OutputFormat' => 'mp3',
+                'VoiceId' => 'Ruth',
+                'Engine' => 'long-form',
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | SAVE AUDIO
+            |--------------------------------------------------------------------------
+            */
+
+            $audioFile = "$slug-page-$pageNumber.mp3";
+
+            file_put_contents(
+                "$folder/$audioFile",
+                $audioResult['AudioStream']->getContents()
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | GENERATE SPEECH MARKS
+            |--------------------------------------------------------------------------
+            */
+
+            $speechMarkResult = $polly->synthesizeSpeech([
+                'Text' => $pageText,
+                'OutputFormat' => 'json',
+                'VoiceId' => 'Ruth',
+                'Engine' => 'long-form',
+                'SpeechMarkTypes' => ['word']
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | GET SPEECH MARK DATA
+            |--------------------------------------------------------------------------
+            */
+
+            $speechData = $speechMarkResult['AudioStream']->getContents();
+
+            $speechLines = explode("\n", trim($speechData));
+
+            $allWords = [];
+
+            foreach ($speechLines as $line) {
+
+                $json = json_decode($line, true);
+
+                if (!$json || !isset($json['value'])) {
+                    continue;
+                }
+
+                $allWords[] = [
+                    'text' => $json['value'],
+                    'time' => $json['time']
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | BUILD SENTENCES
+            |--------------------------------------------------------------------------
+            */
+
+            $sentences = [];
+
+            $wordIndex = 0;
+
+            foreach ($chunk as $sentenceText) {
+
+                $sentenceWords = preg_split('/\s+/', trim($sentenceText));
+
+                $words = [];
+
+                foreach ($sentenceWords as $i => $wordText) {
+
+                    if (!isset($allWords[$wordIndex])) {
+                        continue;
+                    }
+
+                    $currentWord = $allWords[$wordIndex];
+
+                    $nextWord = $allWords[$wordIndex + 1] ?? null;
+
+                    // Start time
+                    $start = round($currentWord['time'] / 1000, 3);
+
+                    // End time
+                    if ($nextWord) {
+                        $end = round($nextWord['time'] / 1000, 3);
+                    } else {
+                        $end = round(($currentWord['time'] + 500) / 1000, 3);
+                    }
+
+                    $words[] = [
+                        'text' => $currentWord['text'],
+                        'start' => $start,
+                        'end' => $end,
+                    ];
+
+                    $wordIndex++;
+                }
+
+                $sentences[] = [
+                    'text' => $sentenceText,
+                    'words' => $words
+                ];
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | ADD PAGE
+            |--------------------------------------------------------------------------
+            */
+
+            $story['pages'][] = [
+                'img' => 'https://sample-image-url.com/' . $slug . '-page-' . $pageNumber . '.webp',
+                'audio' => url("audio/$slug/$audioFile"),
+                'sentences' => $sentences
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE JSON FILE
+        |--------------------------------------------------------------------------
+        */
+
+        file_put_contents(
+            public_path("audio/$slug/$slug.story.json"),
+            json_encode([$story], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPONSE
+        |--------------------------------------------------------------------------
+        */
+
+        return response()->json([
+            'success' => true,
+            'story' => $story,
+            'json_url' => url("audio/$slug/$slug.story.json")
+        ]);
+    }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+//......................................................................
    var $validated=null;
     //create_story_json
     public function create_story_json(Request $request){
@@ -99,6 +358,7 @@ class StoryImportController extends Controller
 
             // convert 3 lines → sentence
             $text = implode(" ", $chunk);
+
             $marks = $this->generateSpeechMarks($text);
             return response()->json([
                 'success' => true,
@@ -149,7 +409,7 @@ public function generateSpeechMarks(string $text)
     $marks = $polly->synthesizeWithMarks($text);
 
     return response()->json([
-        'success' => true,
+        'xxxxx' => true,
         'marks' => $marks
     ]);
 }

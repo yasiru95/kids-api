@@ -8,6 +8,25 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\ImageUploadController;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\DB;
+
+
+Route::get('/db-check', function () {
+    try {
+        $dbName = DB::connection()->getDatabaseName();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'DB connected successfully',
+            'database' => $dbName
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage()
+        ]);
+    }
+});
 
 
 Route::get('/testcloudinary', function () {

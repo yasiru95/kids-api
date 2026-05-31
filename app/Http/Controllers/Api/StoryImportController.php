@@ -150,17 +150,17 @@ class StoryImportController extends Controller
             // dd(strlen($audioContent)); audio content size in bytes
 
 
-            $uploaded = Cloudinary::uploadApi()->upload(
-            'data:audio/mp3;base64,' . base64_encode($audioContent),
-            [
-            'resource_type' => 'video',
-            'folder' => "stories/{$slug}/audio",
-            'public_id' => "{$slug}-page-{$pageNumber}",
-            'overwrite' => true,
-            ]
-            );
+            // $uploaded = Cloudinary::uploadApi()->upload(
+            // 'data:audio/mp3;base64,' . base64_encode($audioContent),
+            // [
+            // 'resource_type' => 'video',
+            // 'folder' => "stories/{$slug}/audio",
+            // 'public_id' => "{$slug}-page-{$pageNumber}",
+            // 'overwrite' => true,
+            // ]
+            // );
 
-            $audioUrl = $uploaded['secure_url'];
+            // $audioUrl = $uploaded['secure_url'];
 
          
 
@@ -271,6 +271,14 @@ class StoryImportController extends Controller
             ];
         }
 
+        
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORT TO DATABASE (DIRECT)
+        |--------------------------------------------------------------------------
+        */
+        $finalResult = $this->import([$story]);
+
         /*
         |--------------------------------------------------------------------------
         | SAVE JSON FILE
@@ -280,6 +288,8 @@ class StoryImportController extends Controller
         $story,
         JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
         );
+
+
 
 
        try{
@@ -314,249 +324,23 @@ class StoryImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Story JSON generated successfully ...',
-            'story' => $story,
-            'audio_url' => $audioUrl,
-            'json_url' => $uploaded['secure_url']
-        ]);
-    }
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-//......................................................................
-   var $validated=null;
-    //create_story_json
-    public function create_story_json(Request $request){
-
-         // ✅ 2. Validation with proper error handling
-        try {
-            $this->validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'required|string',
-                'story' => 'required|string|min:10',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-            
-        }
-
-        $result = $this->amazon_polly();
-        return response()->json([
-            'success' => true,
-            'message' => 'Story processed successfully',
-            'data' => $result
-        ]);
-
-
-        // return $this->splitStoryByLines($this->validated['story']);
-
-
-    
-
-    }
-
-   public function splitStoryByLines($story, $linesPerChunk = 3)
-    {
-    //convert story to array of lines and trim whitespace
-    $lines = array_values(array_filter(array_map('trim', explode("\n", $story)))); 
-    //3lines to array chunk
-    $story_array = array_chunk($lines, $linesPerChunk);
-
-    $this->amazon_polly();
- 
-
-    foreach ($story_array as $index => $part) {
-    // 3 line string
-
-    $result = collect($part)
-    ->map(fn($line) => '"' . $line . '"')
-    ->implode("\n");
-    $this->create_audio($result, $index + 1);
-
-    }
-
-    return ;
-
-    }
-
-    public function amazon_polly(){
-     // Create AWS Polly client
-        $polly = new PollyClient([
-            'region' => env('AWS_DEFAULT_REGION'),
-            'version' => 'latest',
-            'credentials' => [
-                'key' => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'message' => 'Story JSON generated, uploaded to Cloudinary, and imported to database successfully',
+            'data' => [
+                'story' => $story,
+                'cloudinary_json_url' => $uploaded['secure_url'],
+                'import_result' => $finalResult
             ]
         ]);
 
-        $slug = Str::slug($this->validated['title']);
-
-        // Split story into lines (3-line chunks)
-        $lines = array_values(array_filter(explode("\n", $this->validated['story'])));
-        $chunks = array_chunk($lines, 3);
-
-        $results = [];
-
-        foreach ($chunks as $index => $chunk) {
-
-            // convert 3 lines → sentence
-            $text = implode(" ", $chunk);
-
-            $marks = $this->generateSpeechMarks($text);
-            return response()->json([
-                'success' => true,
-                'marks' => $marks
-            ]);
-
-            // $result = $polly->synthesizeSpeech([
-            //     'Text' => $text,
-            //     'OutputFormat' => 'mp3',
-            //     'VoiceId' => 'Ruth',
-            //     'Engine' => 'long-form', 
-            
-            // ]);
-
-            // $audioStream = $result['AudioStream'];
-
-            // // folder
-            // $path = public_path("audio/{$slug}");
-
-            // if (!File::exists($path)) {
-            //     File::makeDirectory($path, 0755, true);
-            // }
-
-            // $fileName = $slug . '-page-' . ($index + 1) . '.mp3';
-
-            // file_put_contents($path . '/' . $fileName, $audioStream);
-
-            // $results[] = [
-            //     'page' => $index + 1,
-            //     'text' => $text,
-            //     'audio_url' => url("audio/{$slug}/{$fileName}")
-            // ];
-        }
-
-        // return response()->json([
-        //     'success' => true,
-        //     'title' => $this->validated['title'],
-        //     'data' => $results
-        // ]);
-    
-
-    }
-
-
-public function generateSpeechMarks(string $text)
-{
-    $polly = new PollyService();
-    $marks = $polly->synthesizeWithMarks($text);
-
-    return response()->json([
-        'xxxxx' => true,
-        'marks' => $marks
-    ]);
-}
-
-    public function create_audio( $storySentence, int $page){
-    {
-    // create SEO slug
-    $slug = Str::slug($this->validated['title']);
-
-    $response = Http::withoutVerifying()->get(
-    'https://api.voicerss.org/',
-    [
-
-    'key' => env('VOICERSS_API_KEY'),
-    'hl'  => 'en-gb',
-    'v' => 'Alice',
-    'src' => $storySentence,
-
-    ]
-    );
-
-    if ($response->successful()) {
-
-    // create folder if not exists
-    if (!File::exists(public_path('audio'))) {
-    File::makeDirectory(public_path('audio'), 0755, true);
-    }
-
-    $filename = $slug . '-page-' . $page . '.wav' ;
-
-    file_put_contents(
-    public_path('audio/' . $filename),
-    $response->body()
-    );
-
-    return response()->json([
-    'success' => true,
-    'message' => 'Audio generated successfully',
-    'audio_url' => url('audio/' . $filename)
-    ]);
-    }
-
-    return response()->json([
-    'success' => false,
-    'message' => 'Failed to generate audio'
-    ], 500);
-    }
-
     }
 
 
 
-    public function import(Request $request)
+     public function import(array $stories)
     {
         $success_msg = [];
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDATION
-        |--------------------------------------------------------------------------
-        */
 
-
-        if (!$request->isJson()) {
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Request must be JSON'
-            ], 400);
-        }
-
-        $stories = $request->all();
-
-        if (empty($stories)) {
-
-            return response()->json([
-                'success' => false,
-                'message' => 'JSON data is empty'
-            ], 422);
-        }
-
-        if (!is_array($stories)) {
-
-            return response()->json([
-                'success' => false,
-                'message' => 'JSON must be an array'
-            ], 422);
-        }
-
+        
         /*
         |--------------------------------------------------------------------------
         | IMPORT STORIES
@@ -775,4 +559,25 @@ public function generateSpeechMarks(string $text)
             'message' => 'Stories Imported Successfully'
         ]);
     }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+    
 }

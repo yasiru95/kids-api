@@ -1,0 +1,603 @@
+[
+    {
+        "id": 1,
+        "title": "newone",
+        "description": "description",
+        "image": "https://res.cloudinary.com/dxe23gtsc/image/upload/f_auto,q_auto,w_800/stories/newone-cover.webp",
+        "pages": [
+            {
+                "img": "https://res.cloudinary.com/dxe23gtsc/image/upload/f_auto,q_auto,w_800/stories/newone-page-1.webp",
+                "audio": "https://res.cloudinary.com/dxe23gtsc/video/upload/stories/newone-page-1.mp3",
+                "sentences": [
+                    {
+                        "text": "Once upon a time, a little rabbit named Benny lived in a sunny meadow.",
+                        "words": [
+                            {
+                                "text": "Once",
+                                "start": 0,
+                                "end": 1.175
+                            },
+                            {
+                                "text": "upon",
+                                "start": 1.175,
+                                "end": 1.425
+                            },
+                            {
+                                "text": "a",
+                                "start": 1.425,
+                                "end": 1.487
+                            },
+                            {
+                                "text": "time",
+                                "start": 1.487,
+                                "end": 2.275
+                            },
+                            {
+                                "text": "a",
+                                "start": 2.275,
+                                "end": 2.362
+                            },
+                            {
+                                "text": "little",
+                                "start": 2.362,
+                                "end": 2.662
+                            },
+                            {
+                                "text": "rabbit",
+                                "start": 2.662,
+                                "end": 3.075
+                            },
+                            {
+                                "text": "named",
+                                "start": 3.075,
+                                "end": 3.337
+                            },
+                            {
+                                "text": "Benny",
+                                "start": 3.337,
+                                "end": 3.825
+                            },
+                            {
+                                "text": "lived",
+                                "start": 3.825,
+                                "end": 4.162
+                            },
+                            {
+                                "text": "in",
+                                "start": 4.162,
+                                "end": 4.25
+                            },
+                            {
+                                "text": "a",
+                                "start": 4.25,
+                                "end": 4.325
+                            },
+                            {
+                                "text": "sunny",
+                                "start": 4.325,
+                                "end": 4.675
+                            },
+                            {
+                                "text": "meadow",
+                                "start": 4.675,
+                                "end": 5.58
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Every morning, Benny hopped around looking for adventures.",
+                        "words": [
+                            {
+                                "text": "Every",
+                                "start": 5.58,
+                                "end": 6.155
+                            },
+                            {
+                                "text": "morning",
+                                "start": 6.155,
+                                "end": 6.617
+                            },
+                            {
+                                "text": "Benny",
+                                "start": 6.617,
+                                "end": 6.967
+                            },
+                            {
+                                "text": "hopped",
+                                "start": 6.967,
+                                "end": 7.267
+                            },
+                            {
+                                "text": "around",
+                                "start": 7.267,
+                                "end": 7.655
+                            },
+                            {
+                                "text": "looking",
+                                "start": 7.655,
+                                "end": 7.955
+                            },
+                            {
+                                "text": "for",
+                                "start": 7.955,
+                                "end": 8.117
+                            },
+                            {
+                                "text": "adventures",
+                                "start": 8.117,
+                                "end": 9.14
+                            }
+                        ]
+                    },
+                    {
+                        "text": "One day, he found a shiny golden key under a flower.",
+                        "words": [
+                            {
+                                "text": "One",
+                                "start": 9.14,
+                                "end": 10.102
+                            },
+                            {
+                                "text": "day",
+                                "start": 10.102,
+                                "end": 10.54
+                            },
+                            {
+                                "text": "he",
+                                "start": 10.54,
+                                "end": 10.715
+                            },
+                            {
+                                "text": "found",
+                                "start": 10.715,
+                                "end": 11.027
+                            },
+                            {
+                                "text": "a",
+                                "start": 11.027,
+                                "end": 11.065
+                            },
+                            {
+                                "text": "shiny",
+                                "start": 11.065,
+                                "end": 11.515
+                            },
+                            {
+                                "text": "golden",
+                                "start": 11.515,
+                                "end": 11.902
+                            },
+                            {
+                                "text": "key",
+                                "start": 11.902,
+                                "end": 12.227
+                            },
+                            {
+                                "text": "under",
+                                "start": 12.227,
+                                "end": 12.465
+                            },
+                            {
+                                "text": "a",
+                                "start": 12.465,
+                                "end": 12.515
+                            },
+                            {
+                                "text": "flower",
+                                "start": 12.515,
+                                "end": 13.015
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "img": "https://res.cloudinary.com/dxe23gtsc/image/upload/f_auto,q_auto,w_800/stories/newone-page-2.webp",
+                "audio": "https://res.cloudinary.com/dxe23gtsc/video/upload/stories/newone-page-2.mp3",
+                "sentences": [
+                    {
+                        "text": "Curious, he followed a trail of sparkling leaves into the forest.",
+                        "words": [
+                            {
+                                "text": "Curious",
+                                "start": 0,
+                                "end": 1.2
+                            },
+                            {
+                                "text": "he",
+                                "start": 1.2,
+                                "end": 1.325
+                            },
+                            {
+                                "text": "followed",
+                                "start": 1.325,
+                                "end": 1.7
+                            },
+                            {
+                                "text": "a",
+                                "start": 1.7,
+                                "end": 1.75
+                            },
+                            {
+                                "text": "trail",
+                                "start": 1.75,
+                                "end": 2.137
+                            },
+                            {
+                                "text": "of",
+                                "start": 2.137,
+                                "end": 2.212
+                            },
+                            {
+                                "text": "sparkling",
+                                "start": 2.212,
+                                "end": 2.85
+                            },
+                            {
+                                "text": "leaves",
+                                "start": 2.85,
+                                "end": 3.175
+                            },
+                            {
+                                "text": "into",
+                                "start": 3.175,
+                                "end": 3.387
+                            },
+                            {
+                                "text": "the",
+                                "start": 3.387,
+                                "end": 3.475
+                            },
+                            {
+                                "text": "forest",
+                                "start": 3.475,
+                                "end": 4.7
+                            }
+                        ]
+                    },
+                    {
+                        "text": "At the end of the trail, he discovered a tiny hidden door in an old tree.",
+                        "words": [
+                            {
+                                "text": "At",
+                                "start": 4.7,
+                                "end": 5.175
+                            },
+                            {
+                                "text": "the",
+                                "start": 5.175,
+                                "end": 5.325
+                            },
+                            {
+                                "text": "end",
+                                "start": 5.325,
+                                "end": 5.45
+                            },
+                            {
+                                "text": "of",
+                                "start": 5.45,
+                                "end": 5.525
+                            },
+                            {
+                                "text": "the",
+                                "start": 5.525,
+                                "end": 5.612
+                            },
+                            {
+                                "text": "trail",
+                                "start": 5.612,
+                                "end": 6.375
+                            },
+                            {
+                                "text": "he",
+                                "start": 6.375,
+                                "end": 6.5
+                            },
+                            {
+                                "text": "discovered",
+                                "start": 6.5,
+                                "end": 6.95
+                            },
+                            {
+                                "text": "a",
+                                "start": 6.95,
+                                "end": 7.025
+                            },
+                            {
+                                "text": "tiny",
+                                "start": 7.025,
+                                "end": 7.462
+                            },
+                            {
+                                "text": "hidden",
+                                "start": 7.462,
+                                "end": 7.75
+                            },
+                            {
+                                "text": "door",
+                                "start": 7.75,
+                                "end": 8.112
+                            },
+                            {
+                                "text": "in",
+                                "start": 8.112,
+                                "end": 8.225
+                            },
+                            {
+                                "text": "an",
+                                "start": 8.225,
+                                "end": 8.325
+                            },
+                            {
+                                "text": "old",
+                                "start": 8.325,
+                                "end": 8.55
+                            },
+                            {
+                                "text": "tree",
+                                "start": 8.55,
+                                "end": 9.42
+                            }
+                        ]
+                    },
+                    {
+                        "text": "The golden key fit perfectly and opened the magical door.",
+                        "words": [
+                            {
+                                "text": "The",
+                                "start": 9.42,
+                                "end": 9.97
+                            },
+                            {
+                                "text": "golden",
+                                "start": 9.97,
+                                "end": 10.382
+                            },
+                            {
+                                "text": "key",
+                                "start": 10.382,
+                                "end": 10.72
+                            },
+                            {
+                                "text": "fit",
+                                "start": 10.72,
+                                "end": 10.945
+                            },
+                            {
+                                "text": "perfectly",
+                                "start": 10.945,
+                                "end": 11.695
+                            },
+                            {
+                                "text": "and",
+                                "start": 11.695,
+                                "end": 11.907
+                            },
+                            {
+                                "text": "opened",
+                                "start": 11.907,
+                                "end": 12.32
+                            },
+                            {
+                                "text": "the",
+                                "start": 12.32,
+                                "end": 12.407
+                            },
+                            {
+                                "text": "magical",
+                                "start": 12.407,
+                                "end": 12.87
+                            },
+                            {
+                                "text": "door",
+                                "start": 12.87,
+                                "end": 13.37
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "img": "https://res.cloudinary.com/dxe23gtsc/image/upload/f_auto,q_auto,w_800/stories/newone-page-3.webp",
+                "audio": "https://res.cloudinary.com/dxe23gtsc/video/upload/stories/newone-page-3.mp3",
+                "sentences": [
+                    {
+                        "text": "Inside, friendly fairies were preparing a surprise party for the forest animals.",
+                        "words": [
+                            {
+                                "text": "Inside",
+                                "start": 0,
+                                "end": 1.125
+                            },
+                            {
+                                "text": "friendly",
+                                "start": 1.125,
+                                "end": 1.525
+                            },
+                            {
+                                "text": "fairies",
+                                "start": 1.525,
+                                "end": 2.012
+                            },
+                            {
+                                "text": "were",
+                                "start": 2.012,
+                                "end": 2.112
+                            },
+                            {
+                                "text": "preparing",
+                                "start": 2.112,
+                                "end": 2.625
+                            },
+                            {
+                                "text": "a",
+                                "start": 2.625,
+                                "end": 2.675
+                            },
+                            {
+                                "text": "surprise",
+                                "start": 2.675,
+                                "end": 3.162
+                            },
+                            {
+                                "text": "party",
+                                "start": 3.162,
+                                "end": 3.55
+                            },
+                            {
+                                "text": "for",
+                                "start": 3.55,
+                                "end": 3.7
+                            },
+                            {
+                                "text": "the",
+                                "start": 3.7,
+                                "end": 3.775
+                            },
+                            {
+                                "text": "forest",
+                                "start": 3.775,
+                                "end": 4.2
+                            },
+                            {
+                                "text": "animals",
+                                "start": 4.2,
+                                "end": 5.16
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Benny helped decorate with colorful flowers and bright lanterns.",
+                        "words": [
+                            {
+                                "text": "Benny",
+                                "start": 5.16,
+                                "end": 5.96
+                            },
+                            {
+                                "text": "helped",
+                                "start": 5.96,
+                                "end": 6.235
+                            },
+                            {
+                                "text": "decorate",
+                                "start": 6.235,
+                                "end": 6.735
+                            },
+                            {
+                                "text": "with",
+                                "start": 6.735,
+                                "end": 6.885
+                            },
+                            {
+                                "text": "colorful",
+                                "start": 6.885,
+                                "end": 7.297
+                            },
+                            {
+                                "text": "flowers",
+                                "start": 7.297,
+                                "end": 7.835
+                            },
+                            {
+                                "text": "and",
+                                "start": 7.835,
+                                "end": 7.96
+                            },
+                            {
+                                "text": "bright",
+                                "start": 7.96,
+                                "end": 8.247
+                            },
+                            {
+                                "text": "lanterns",
+                                "start": 8.247,
+                                "end": 9.14
+                            }
+                        ]
+                    },
+                    {
+                        "text": "Everyone celebrated together, and Benny became known as the bravest rabbit in the meadow. \ud83d\udc30\u2728",
+                        "words": [
+                            {
+                                "text": "Everyone",
+                                "start": 9.14,
+                                "end": 10.015
+                            },
+                            {
+                                "text": "celebrated",
+                                "start": 10.015,
+                                "end": 10.565
+                            },
+                            {
+                                "text": "together",
+                                "start": 10.565,
+                                "end": 11.427
+                            },
+                            {
+                                "text": "and",
+                                "start": 11.427,
+                                "end": 11.64
+                            },
+                            {
+                                "text": "Benny",
+                                "start": 11.64,
+                                "end": 11.94
+                            },
+                            {
+                                "text": "became",
+                                "start": 11.94,
+                                "end": 12.252
+                            },
+                            {
+                                "text": "known",
+                                "start": 12.252,
+                                "end": 12.565
+                            },
+                            {
+                                "text": "as",
+                                "start": 12.565,
+                                "end": 12.727
+                            },
+                            {
+                                "text": "the",
+                                "start": 12.727,
+                                "end": 12.84
+                            },
+                            {
+                                "text": "bravest",
+                                "start": 12.84,
+                                "end": 13.34
+                            },
+                            {
+                                "text": "rabbit",
+                                "start": 13.34,
+                                "end": 13.677
+                            },
+                            {
+                                "text": "in",
+                                "start": 13.677,
+                                "end": 13.777
+                            },
+                            {
+                                "text": "the",
+                                "start": 13.777,
+                                "end": 13.852
+                            },
+                            {
+                                "text": "meadow",
+                                "start": 13.852,
+                                "end": 14.815
+                            },
+                            {
+                                "text": "\ud83d\udc30",
+                                "start": 14.815,
+                                "end": 16.002
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

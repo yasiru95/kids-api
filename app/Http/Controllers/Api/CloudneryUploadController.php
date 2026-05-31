@@ -9,9 +9,9 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
-class ImageUploadController extends Controller
+class CloudneryUploadController extends Controller
 {
-    public function upload(Request $request)
+    public function upload_images(Request $request )
     {
         // ✅ Validate request
         $request->validate([
@@ -57,7 +57,7 @@ class ImageUploadController extends Controller
             // $img->cover(1080, 1920);
 
             // ✅ Rename image
-            $fileName = $storyName . '-story-image-' . ($index + 1);
+            $fileName = $storyName . '-story-image-' . ($index + 1). '.webp';
             
             try {
 
@@ -66,8 +66,8 @@ class ImageUploadController extends Controller
             $image->getRealPath(),
             [
 
-            'folder' => "stories/{$storyName}",
-            'public_id' => $fileName, 
+            'folder' => "stories/{$storyName}/images",
+            'public_id' => $fileName. 'page-' . ($index + 1),
             'format' => 'webp',
             'overwrite' => true,
             'quality' => 'auto',
@@ -125,4 +125,72 @@ class ImageUploadController extends Controller
             'images' => $uploadedFiles
         ]);
     }
+
+
+
+public function uploadAudio(Request $request)
+{
+    // ✅ Validate
+   try {
+    $validated = $request->validate([
+        'story_name' => 'required|string',
+        'audio' => 'required|file|mimes:mp3,wav,aac,ogg'
+    ]);
+   }
+    catch (\Throwable $th) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Validation failed: ' . $th->getMessage()
+        ], 422);
+    }
+
+    $storyName = Str::slug($request->story_name);
+
+    $audioFile = $request->file('audio');
+
+    $fileName = $storyName . '-audio-' . time();
+
+    try {
+
+        // ✅ Upload to Cloudinary
+
+        $uploaded = Cloudinary::uploadApi()->upload(
+            $audioFile->getRealPath(),
+            [
+                'resource_type' => 'video', // IMPORTANT for mp3/audio in Cloudinary
+                'folder' => "stories/{$storyName}/audio",
+                'public_id' => $fileName,
+
+                // Optional optimizations
+                'overwrite' => true,
+                'format' => 'mp3',
+
+                // Metadata
+                'context' => [
+                    'story' => $storyName,
+                    'type' => 'audio'
+                ]
+            ]
+        );
+
+        return response()->json([
+            'status' => true,
+            'story_name' => $storyName,
+            'audio_url' => $uploaded['secure_url']
+        ]);
+
+    } catch (\Throwable $th) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Audio upload failed: ' . $th->getMessage()
+        ], 500);
+    }
+}
+
+
+
+    
+    
+    
+
 }

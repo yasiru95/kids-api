@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\File;
 use Aws\Polly\PollyClient;
 use App\Services\PollyService;
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 class StoryImportController extends Controller
 {
 
@@ -27,11 +27,19 @@ class StoryImportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'story' => 'required|string|min:10',
-        ]);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'story' => 'required|string|min:10',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }   
 
         /*
         |--------------------------------------------------------------------------
@@ -74,7 +82,7 @@ class StoryImportController extends Controller
             'id' => 1,
             'title' => $validated['title'],
             'description' => $validated['description'],
-            'image' => 'https://sample-image-url.com/' . $slug . '-cover.webp',
+            'image' => config('story.imgurl') . "{$slug}/images/{$slug}-cover.webp",
             'pages' => []
         ];
 
@@ -84,11 +92,11 @@ class StoryImportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $folder = public_path("audio/$slug");
+        // $folder = public_path("audio/$slug");
 
-        if (!File::exists($folder)) {
-            File::makeDirectory($folder, 0755, true);
-        }
+        // if (!File::exists($folder)) {
+        //     File::makeDirectory($folder, 0755, true);
+        // }
 
         /*
         |--------------------------------------------------------------------------
@@ -128,11 +136,36 @@ class StoryImportController extends Controller
             */
 
             $audioFile = "$slug-page-$pageNumber.mp3";
+            //localy
+            // file_put_contents(
+            //     "$folder/$audioFile",
+            //     $audioResult['AudioStream']->getContents()
+            // );
 
-            file_put_contents(
-                "$folder/$audioFile",
-                $audioResult['AudioStream']->getContents()
+            //mp3 file
+            $audioContent = $audioResult['AudioStream']->getContents();
+
+          
+            
+            // dd(strlen($audioContent)); audio content size in bytes
+
+
+            $uploaded = Cloudinary::uploadApi()->upload(
+            'data:audio/mp3;base64,' . base64_encode($audioContent),
+            [
+            'resource_type' => 'video',
+            'folder' => "stories/{$slug}/audio",
+            'public_id' => "{$slug}-page-{$pageNumber}",
+            'overwrite' => true,
+            ]
             );
+
+            $audioUrl = $uploaded['secure_url'];
+
+         
+
+            
+
 
             /*
             |--------------------------------------------------------------------------
@@ -232,8 +265,8 @@ class StoryImportController extends Controller
             */
 
             $story['pages'][] = [
-                'img' => 'https://sample-image-url.com/' . $slug . '-page-' . $pageNumber . '.webp',
-                'audio' => url("audio/$slug/$audioFile"),
+                'img' => config('story.imgurl') . "{$slug}/images/{$slug}-page-{$pageNumber}.webp",
+                'audio' => config('story.audiourl') . "{$slug}/audio/{$slug}-page-{$pageNumber}.mp3",
                 'sentences' => $sentences
             ];
         }
@@ -243,11 +276,35 @@ class StoryImportController extends Controller
         | SAVE JSON FILE
         |--------------------------------------------------------------------------
         */
-
-        file_put_contents(
-            public_path("audio/$slug/$slug.story.json"),
-            json_encode([$story], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        $json = json_encode(
+        $story,
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
         );
+
+
+       try{
+         $uploaded = Cloudinary::uploadApi()->upload(
+        'data:application/json;base64,' . base64_encode($json),
+        // json_encode([$story], JSON_PRETTY_PRINT ),
+        [
+        'resource_type' => 'raw',
+        'folder' => "stories/{$slug}",
+        'public_id' => "{$slug}.json",
+        'format' => 'json',
+        'overwrite' => true,
+        ]
+        );
+       }catch(\Throwable $th){
+        return response()->json([
+            'success' => false,
+            'message' => 'JSON upload failed: ' . $th->getMessage()
+        ], 500);
+       }
+
+        // file_put_contents(
+        //     public_path("audio/$slug/$slug.story.json"),
+        //     json_encode([$story], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        // );
 
         /*
         |--------------------------------------------------------------------------
@@ -257,8 +314,10 @@ class StoryImportController extends Controller
 
         return response()->json([
             'success' => true,
+            'message' => 'Story JSON generated successfully ...',
             'story' => $story,
-            'json_url' => url("audio/$slug/$slug.story.json")
+            'audio_url' => $audioUrl,
+            'json_url' => $uploaded['secure_url']
         ]);
     }
 

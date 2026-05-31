@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\StoryImportController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\ImageUploadController;
+use App\Http\Controllers\Api\CloudneryUploadController;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\DB;
 
@@ -95,7 +95,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-Route::post('/upload-story-images', [ImageUploadController::class, 'upload']);
+Route::post('/upload-story-images', [CloudneryUploadController::class, 'upload_images']);
+Route::post('/upload-story-audio', [CloudneryUploadController::class, 'uploadAudio']);
 
 Route::post('/stories/import', [StoryImportController::class, 'import']);
 Route::post('/stories/upload-story', [StoryImportController::class, 'create_story_json']);

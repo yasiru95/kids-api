@@ -15,10 +15,31 @@ use Illuminate\Support\Facades\File;
 use Aws\Polly\PollyClient;
 use App\Services\PollyService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Jobs\GenerateStoryJob;
+use App\Jobs\ProcessStoryJob;
+use Illuminate\Support\Facades\Log;
 class StoryImportController extends Controller
 {
 
- public function generateStoryJSON(Request $request)
+public function generateStoryJSON(Request $request)
+{
+    $validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'story' => 'required|string|min:10',
+    ]);
+
+    GenerateStoryJob::dispatch($validated);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Story is being processed in background queue.......'
+    ]);
+}
+
+//not use everything in job now
+
+ public function generateStoryJSONTest(Request $request)
     {
         
         /*
@@ -150,17 +171,17 @@ class StoryImportController extends Controller
             // dd(strlen($audioContent)); audio content size in bytes
 
 
-            // $uploaded = Cloudinary::uploadApi()->upload(
-            // 'data:audio/mp3;base64,' . base64_encode($audioContent),
-            // [
-            // 'resource_type' => 'video',
-            // 'folder' => "stories/{$slug}/audio",
-            // 'public_id' => "{$slug}-page-{$pageNumber}",
-            // 'overwrite' => true,
-            // ]
-            // );
+            $uploaded = Cloudinary::uploadApi()->upload(
+            'data:audio/mp3;base64,' . base64_encode($audioContent),
+            [
+            'resource_type' => 'video',
+            'folder' => "stories/{$slug}/audio",
+            'public_id' => "{$slug}-page-{$pageNumber}",
+            'overwrite' => true,
+            ]
+            );
 
-            // $audioUrl = $uploaded['secure_url'];
+            $audioUrl = $uploaded['secure_url'];
 
          
 

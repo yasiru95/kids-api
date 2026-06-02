@@ -8,18 +8,21 @@ use App\Http\Resources\StoryResource;
 use App\Http\Resources\StoryWordResource;
 use App\Http\Resources\StorySentenceResource;
 use App\Http\Resources\StoryPageResource;
+use Illuminate\Support\Facades\Log;
 
 class StoryController extends Controller
 {
     // GET ALL STORIES
     public function index()
     {
+        Log::info('Fetching all stories');
         return Story::select(
             'id',
             'title',
             'description',
             'image'
         )->get();
+
     }
 
     // GET SINGLE STORY

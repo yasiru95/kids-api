@@ -45,11 +45,11 @@ class ProcessStoryJob implements ShouldQueue
 
 
         $polly = new PollyClient([
-            'region' => env('AWS_DEFAULT_REGION'),
+            'region' => config('AWS_DEFAULT_REGION'),
             'version' => 'latest',
             'credentials' => [
-                'key' => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
+                'key' => config('AWS_ACCESS_KEY_ID'),
+                'secret' => config('AWS_SECRET_ACCESS_KEY'),
             ]
         ]);
 

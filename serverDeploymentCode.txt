@@ -1,0 +1,165 @@
+# ==============================
+# 1. STOP SERVICES
+# ==============================
+sudo systemctl stop nginx
+sudo systemctl stop php-fpm
+
+# ==============================
+# 2. DELETE OLD PROJECT
+# ==============================
+sudo rm -rf /var/www/kids-api
+
+# ==============================
+# 3. CLONE PROJECT
+# ==============================
+cd /var/www
+sudo git clone https://github.com/yasiru95/kids-api.git kids-api
+cd /var/www/kids-api
+
+# ==============================
+# 4. PERMISSIONS FIX
+# ==============================
+sudo chown -R nginx:nginx /var/www/kids-api
+sudo mkdir -p storage/logs bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+
+# ==============================
+# 5. INSTALL DEPENDENCIES
+# ==============================
+composer install --no-interaction --prefer-dist
+
+
+
+cd /var/www
+
+sudo chown -R opc:opc kids-api
+sudo chmod -R 775 kids-api
+
+cd kids-api
+
+mkdir -p vendor
+mkdir -p storage/logs
+mkdir -p bootstrap/cache
+
+composer install
+
+
+
+
+
+sudo chown -R opc:opc /var/www/kids-api
+
+
+
+
+cd /var/www/kids-api && \
+cat > .env <<EOF
+APP_NAME=KidsAPI
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://132.145.72.192
+
+LOG_CHANNEL=stack
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=kids_story_db
+DB_USERNAME=kidsuser
+DB_PASSWORD=StrongPassword123
+
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+FILESYSTEM_DISK=local
+EOF
+
+# =========================
+# 1. NGINX CONFIG
+# =========================
+sudo tee /etc/nginx/conf.d/kids-api.conf > /dev/null <<EOF
+server {
+    listen 80;
+    server_name 132.145.72.192;
+
+    root /var/www/kids-api/public;
+    index index.php index.html;
+
+    access_log /var/log/nginx/kids-api-access.log;
+    error_log /var/log/nginx/kids-api-error.log;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass unix:/run/php-fpm/www.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+EOF
+
+
+# =========================
+# 2. FIX LARAVEL PERMISSIONS
+# =========================
+sudo mkdir -p /var/www/kids-api/storage/logs
+sudo mkdir -p /var/www/kids-api/bootstrap/cache
+
+sudo chown -R apache:apache /var/www/kids-api
+sudo chmod -R 775 /var/www/kids-api/storage
+sudo chmod -R 775 /var/www/kids-api/bootstrap/cache
+
+sudo touch /var/www/kids-api/storage/logs/laravel.log
+sudo chown apache:apache /var/www/kids-api/storage/logs/laravel.log
+sudo chmod 664 /var/www/kids-api/storage/logs/laravel.log
+
+
+# =========================
+# 3. TEST & RESTART NGINX + PHP
+# =========================
+sudo nginx -t
+sudo systemctl restart php-fpm
+sudo systemctl restart nginx
+
+
+# =========================
+# 4. DONE MESSAGE
+# =========================
+echo "🚀 Laravel + Nginx setup completed: http://132.145.72.192"
+
+
+
+
+
+
+cd /var/www/kids-api
+
+# Fix ownership for Laravel (IMPORTANT)
+sudo chown -R apache:apache /var/www/kids-api
+
+# Fix permissions for writable folders only
+sudo chmod -R 775 storage
+sudo chmod -R 775 bootstrap/cache
+
+# Ensure log file exists
+sudo touch storage/logs/laravel.log
+sudo chmod 664 storage/logs/laravel.log
+
+# Clear cached config (important after .env change)
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+
+# Restart services
+sudo systemctl restart php-fpm
+sudo systemctl restart nginx

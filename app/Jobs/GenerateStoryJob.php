@@ -23,6 +23,10 @@ class GenerateStoryJob implements ShouldQueue
 
     public function handle()
     {
-        dispatch(new ProcessStoryJob($this->validated));
+        try {
+            ProcessStoryJob::dispatch($this->validated);
+        } catch (\Exception $e) {
+            Log::error('Error dispatching ProcessStoryJob: ' . $e->getMessage());
+        }
     }
 }

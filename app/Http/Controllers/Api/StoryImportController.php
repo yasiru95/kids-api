@@ -23,13 +23,42 @@ class StoryImportController extends Controller
 
 public function generateStoryJSON(Request $request)
 {
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'required|string',
-        'story' => 'required|string|min:10',
-    ]);
+   try {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'storyFile' => 'required|file|mimes:txt|max:5120', // max 5MB text file
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+    }
 
-    GenerateStoryJob::dispatch($validated);
+    $file = $request->file('storyFile');
+
+    if (!$file) {
+    return response()->json([
+        'success' => false,
+        'message' => 'storyFile is missing in request'
+    ], 422);
+    }
+
+    $storyText= file_get_contents($file->getRealPath());
+
+      // ✅ CLEAN PAYLOAD FOR JOB
+    $payload = [
+        'title' => $validated['title'],
+        'description' => $validated['description'],
+        'story' => $storyText,
+    ];
+
+
+    
+
+    GenerateStoryJob::dispatch($payload);
 
     return response()->json([
         'success' => true,

@@ -45,11 +45,11 @@ class ProcessStoryJob implements ShouldQueue
 
 
         $polly = new PollyClient([
-            'region' => config('config.aws_region'),
+            'region' => config('services.aws.region'),
             'version' => 'latest',
             'credentials' => [
-                'key' => config('config.aws.key'),
-                'secret' => config('config.aws.secret'),
+                'key' => config('services.aws.key'),
+                'secret' => config('services.aws.secret'),
             ]
         ]);
 

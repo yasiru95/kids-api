@@ -26,9 +26,6 @@ sudo chmod -R 775 storage bootstrap/cache
 # ==============================
 # 5. INSTALL DEPENDENCIES
 # ==============================
-composer install --no-interaction --prefer-dist
-
-
 
 cd /var/www
 
@@ -43,11 +40,11 @@ mkdir -p bootstrap/cache
 
 composer install
 
-
-
-
-
 sudo chown -R opc:opc /var/www/kids-api
+
+
+
+
 
 
 
@@ -70,29 +67,12 @@ DB_USERNAME=kidsuser
 DB_PASSWORD=StrongPassword123
 
 
-CACHE_DRIVER=file
+CACHE_STORE=file
 QUEUE_CONNECTION=sync
 SESSION_DRIVER=file
 SESSION_LIFETIME=120
 
 FILESYSTEM_DISK=local
-
-SESSION_DRIVER=database
-SESSION_LIFETIME=120
-SESSION_ENCRYPT=false
-SESSION_PATH=/
-SESSION_DOMAIN=null
-
-BROADCAST_CONNECTION=log
-FILESYSTEM_DISK=local
-
-QUEUE_CONNECTION=redis
-QUEUE_FAILED_DRIVER=database
-
-CACHE_STORE=database
-# CACHE_PREFIX=
-
-MEMCACHED_HOST=127.0.0.1
 
 REDIS_CLIENT=phpredis
 REDIS_HOST=127.0.0.1
@@ -100,16 +80,12 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 MAIL_MAILER=log
-MAIL_SCHEME=null
-MAIL_HOST=127.0.0.1
-MAIL_PORT=2525
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_ADDRESS=hello@example.com
 MAIL_FROM_NAME="${APP_NAME}"
 
-
 VITE_APP_NAME="${APP_NAME}"
+
+EOF
 
 
 
@@ -176,7 +152,10 @@ echo "🚀 Laravel + Nginx setup completed: http://132.145.72.192"
 
 
 
+#edit .env
 
+sudo chown opc:opc /var/www/kids-api/.env
+chmod 664 /var/www/kids-api/.env
 
 
 cd /var/www/kids-api
@@ -214,3 +193,13 @@ php artisan queue:restart
 
 ssh -i oracle.key opc@132.145.72.192
 
+cd /var/www/kids-api
+
+tail -100 storage/logs/laravel.log
+
+
+
+cd /var/www/kids-api
+
+sudo chown -R opc:nginx storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache

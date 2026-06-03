@@ -9,6 +9,36 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\CloudneryUploadController;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+Route::get('/polly', function () {
+    $polly = new \Aws\Polly\PollyClient([
+        'region' => config('services.aws.region'),
+    'version' => 'latest',
+    'credentials' => [
+        'key' => config('services.aws.key'),
+        'secret' => config('services.aws.secret'),
+    ]
+]);
+
+$result = $polly->synthesizeSpeech([
+    'Text' => 'HIHI Hello, this is a test audio from AWS Polly',
+    'OutputFormat' => 'mp3',
+    'VoiceId' => 'Joanna',
+]);
+
+$audio = $result['AudioStream']->getContents();
+
+Storage::disk('public')->put('polly/test.mp3', $audio);
+
+return response()->json([
+    'message' => 'Audio generated and stored successfully',
+    'url' => Storage::url('polly/test.mp3'),
+    'size' => strlen($audio) . ' bytes',
+]);
+
+
+});
 
 
 Route::get('/db-check', function () {

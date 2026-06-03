@@ -69,13 +69,50 @@ DB_DATABASE=kids_story_db
 DB_USERNAME=kidsuser
 DB_PASSWORD=StrongPassword123
 
+
 CACHE_DRIVER=file
 QUEUE_CONNECTION=sync
 SESSION_DRIVER=file
 SESSION_LIFETIME=120
 
 FILESYSTEM_DISK=local
-EOF
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+
+QUEUE_CONNECTION=redis
+QUEUE_FAILED_DRIVER=database
+
+CACHE_STORE=database
+# CACHE_PREFIX=
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=log
+MAIL_SCHEME=null
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+
+VITE_APP_NAME="${APP_NAME}"
+
+
+
 
 # =========================
 # 1. NGINX CONFIG
@@ -173,3 +210,7 @@ php artisan cache:clear
 php artisan config:cache
 
 php artisan queue:restart
+
+
+ssh -i oracle.key opc@132.145.72.192
+

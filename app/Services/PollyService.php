@@ -6,40 +6,40 @@ use Aws\Polly\PollyClient;
 
 class PollyService
 {
-    public function synthesizeWithMarks($text)
-    {
-        $polly = new PollyClient([
-            'version' => 'latest',
-            'region' => env('AWS_DEFAULT_REGION'),
-            'credentials' => [
-                'key' => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            ]
-        ]);
+    // public function synthesizeWithMarks($text)
+    // {
+    //     $polly = new PollyClient([
+    //         'version' => 'latest',
+    //         'region' => env('AWS_DEFAULT_REGION'),
+    //         'credentials' => [
+    //             'key' => env('AWS_ACCESS_KEY_ID'),
+    //             'secret' => env('AWS_SECRET_ACCESS_KEY'),
+    //         ]
+    //     ]);
 
-        $result = $polly->synthesizeSpeech([
-            'Text' => $text,
-            'OutputFormat' => 'json',
-            'VoiceId' => 'Ruth',
-            'Engine' => 'long-form', 
-            'TextType' => 'text',
-            'SpeechMarkTypes' => ['word']
+    //     $result = $polly->synthesizeSpeech([
+    //         'Text' => $text,
+    //         'OutputFormat' => 'json',
+    //         'VoiceId' => 'Ruth',
+    //         'Engine' => 'long-form', 
+    //         'TextType' => 'text',
+    //         'SpeechMarkTypes' => ['word']
 
-            // 'SpeechMarkTypes' => ['word', 'sentence']
-        ]);
+    //         // 'SpeechMarkTypes' => ['word', 'sentence']
+    //     ]);
 
-        $stream = $result['AudioStream'];
+    //     $stream = $result['AudioStream'];
 
-        $lines = explode("\n", $stream->getContents());
+    //     $lines = explode("\n", $stream->getContents());
 
-        $marks = [];
+    //     $marks = [];
 
-        foreach ($lines as $line) {
-            if (!empty($line)) {
-                $marks[] = json_decode($line, true);
-            }
-        }
+    //     foreach ($lines as $line) {
+    //         if (!empty($line)) {
+    //             $marks[] = json_decode($line, true);
+    //         }
+    //     }
 
-        return $marks;
-    }
+    //     return $marks;
+    // }
 }

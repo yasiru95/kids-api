@@ -163,3 +163,13 @@ php artisan route:clear
 # Restart services
 sudo systemctl restart php-fpm
 sudo systemctl restart nginx
+
+
+
+git pull
+
+php artisan config:clear
+php artisan cache:clear
+php artisan config:cache
+
+php artisan queue:restart

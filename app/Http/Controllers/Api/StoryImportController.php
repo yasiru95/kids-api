@@ -23,6 +23,7 @@ class StoryImportController extends Controller
 
 public function generateStoryJSON(Request $request)
 {
+
    try {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -30,6 +31,7 @@ public function generateStoryJSON(Request $request)
             'storyFile' => 'required|file|mimes:txt|max:5120', // max 5MB text file
         ]);
     } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('Validation failed: ' . json_encode($e->errors()));
         return response()->json([
             'success' => false,
             'message' => 'Validation failed',
@@ -48,7 +50,7 @@ public function generateStoryJSON(Request $request)
 
     $storyText= file_get_contents($file->getRealPath());
 
-      // ✅ CLEAN PAYLOAD FOR JOB
+    // ✅ CLEAN PAYLOAD FOR JOB
     $payload = [
         'title' => $validated['title'],
         'description' => $validated['description'],

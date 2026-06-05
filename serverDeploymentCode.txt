@@ -181,7 +181,7 @@ sudo systemctl restart php-fpm
 sudo systemctl restart nginx
 
 
-
+sudo chown -R $USER:$USER .git
 git pull
 
 php artisan config:clear

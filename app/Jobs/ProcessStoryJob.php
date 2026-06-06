@@ -60,7 +60,7 @@ class ProcessStoryJob implements ShouldQueue
         $storyData = [
             'title' => $title,
             'description' => $description,
-            'image' => config('story.imgurl') . "{$slug}/images/{$slug}-cover.webp",
+            'image' => config('story.imgurl') . "{$slug}/images/cover.webp",
             'pages' => []
         ];
 
@@ -162,7 +162,7 @@ class ProcessStoryJob implements ShouldQueue
             }
 
             $storyData['pages'][] = [
-                'img' => config('story.imgurl') . "{$slug}/images/{$slug}-page-{$pageNumber}.webp",
+                'img' => config('story.imgurl') . "{$slug}/images/page-{$pageNumber}.webp",
                 'audio' => $audioUrl,
                 'sentences' => $sentences
             ];

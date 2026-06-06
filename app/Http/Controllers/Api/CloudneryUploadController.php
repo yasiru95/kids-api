@@ -40,7 +40,7 @@ class CloudneryUploadController extends Controller
         // }
 
         // // ✅ Image Manager
-        // $manager = new ImageManager(new Driver());
+        $manager = new ImageManager(new Driver());
 
         $uploadedFiles = [];
 
@@ -50,28 +50,50 @@ class CloudneryUploadController extends Controller
                 continue;
             }
 
-            // ✅ Read image
-            // $img = $manager->read($image);
+            // return response()->json([
+            //     'status' => false,
+            //     'message' => 'No image file found at index ' . $index,
+            //     'index' =>  $image->getClientOriginalName()
+            // ], 422);
+           
+            
+            if($image->getClientOriginalName() === 'cover'){
+               return response()->json([
+                    'status' => false,
+                    'message' => 'Cover image should be uploaded separately with the name "cover"'
+                ], 422);
+            }
 
+            // ✅ Read image
+            $img = $manager->read($image);
+
+            // Convert to WebP in memory
+            $webpData = (string) $img->toWebp(80);
             // Optional resize
             // $img->cover(1080, 1920);
 
+             // ✅ Image size in MB
+            $sizeInMB = round($image->getSize() / 1024 / 1024, 2);
+
             // ✅ Rename image
-            $fileName = $storyName . '-story-image-' . ($index + 1). '.webp';
+            // $fileName = $storyName . '-story-image-' . ($index + 1). '.webp';
             
             try {
+            $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
 
             // ✅ Upload to Cloudinary 
             $uploaded = Cloudinary::uploadApi()->upload(
-            $image->getRealPath(),
+            // $image->getRealPath(),
+              'data:image/webp;base64,' . base64_encode($webpData),
             [
 
             'folder' => "stories/{$storyName}/images",
-            'public_id' => $fileName. 'page-' . ($index + 1),
+            'public_id' =>$fileName!='cover'? "page-".($index + 1): 'cover', // Use original name for cover, page-1, page-2... for others
             'format' => 'webp',
             'overwrite' => true,
             'quality' => 'auto',
-            'fetch_format' => 'auto',
+            'fetch_format' => 'webp',
+                
 
             // ✅ Tags
             'tags' => [
@@ -110,7 +132,7 @@ class CloudneryUploadController extends Controller
             // Full path
             // $filePath = $folderPath . '/' . $fileName;
 
-            // ✅ Save as webp
+            // // ✅ Save as webp
             // $img->toWebp(80)->save($filePath);
 
             // ✅ Public URL

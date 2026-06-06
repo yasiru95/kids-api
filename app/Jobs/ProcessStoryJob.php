@@ -366,8 +366,8 @@ class ProcessStoryJob implements ShouldQueue
                             'text' => $wordData['text'],
 
                             // milliseconds
-                            'start_time' => intval($wordData['start'] * 1000),
-                            'end_time' => intval($wordData['end'] * 1000),
+                            'start_time' => intval($wordData['start'] ),
+                            'end_time' => intval($wordData['end'] ),
                         ]);
 
                         if ($wordData !== null) {

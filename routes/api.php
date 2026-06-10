@@ -88,6 +88,10 @@ Route::post(
     [AuthController::class, 'login']
 );
 
+Route::post('/testcheckout', [PaymentController::class, 'checkout']);
+
+
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post(
@@ -100,6 +104,11 @@ Route::middleware('auth:sanctum')->group(function () {
     | PAYMENTS
     |--------------------------------------------------------------------------
     */
+
+    Route::post(
+    '/stripe/webhook',
+    [PaymentController::class, 'webhook']
+    );
 
     Route::post('/payments', [
         PaymentController::class,

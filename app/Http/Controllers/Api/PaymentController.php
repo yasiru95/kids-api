@@ -6,9 +6,90 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Stripe\Stripe;
+use Stripe\Checkout\Session;
+use Stripe\Webhook;
 
 class PaymentController extends Controller
 {
+
+public function checkout()
+    {
+        Stripe::setApiKey(config('services.stripe.secret'));
+
+        $session = Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price' => 'price_1TgTC3ELaFc0OJPAt5sRp29t',
+                'quantity' => 1,
+            ]],
+            'mode' => 'subscription',
+            'success_url' => url('/payment-success'),
+            'cancel_url' => url('/payment-cancel'),
+        ]);
+
+        return response()->json([
+            'url' => $session->url,
+        ]);
+    }
+
+    public function webhook(Request $request)
+{
+    $payload = $request->getContent();
+
+    $sigHeader = $request->header('Stripe-Signature');
+
+    $endpointSecret = config('services.stripe.webhook_secret');
+
+    try {
+
+        $event = Webhook::constructEvent(
+            $payload,
+            $sigHeader,
+            $endpointSecret
+        );
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'error' => 'Invalid webhook'
+        ], 400);
+    }
+
+    if (
+        $event->type ===
+        'checkout.session.completed'
+    ) {
+
+        $session = $event->data->object;
+
+        $user = \App\Models\User::where(
+            'email',
+            $session->customer_email
+        )->first();
+
+        if ($user) {
+
+            Payment::create([
+                'user_id' => $user->id,
+                'payment_id' => $session->id,
+                'transaction_id' => $session->payment_intent,
+                'amount' => 4.99,
+                'currency' => 'GBP',
+                'payment_method' => 'stripe',
+                'status' => 'paid',
+                'is_subscription' => true,
+                'start_date' => now(),
+                'end_date' => now()->addMonth(),
+            ]);
+        }
+    }
+
+    return response()->json([
+        'success' => true
+    ]);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | CREATE PAYMENT
@@ -63,12 +144,12 @@ class PaymentController extends Controller
 
             'status' => 'paid',
 
-            'is_subscription' => $validated['is_subscription'] ?? true,
+            'is_subscription' =>  true,
 
-            'start_date' => $validated['start_date'] ?? now(),
+            'start_date' =>  now(),
 
-            'end_date' => $validated['end_date']
-                ?? now()->addMonth(),
+            'end_date' =>
+                now()->addMonth(),
 
 
         ]);

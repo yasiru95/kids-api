@@ -12,10 +12,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://kidsstoryflix.co.uk',
-        'https://www.kidsstoryflix.co.uk',
-    ],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 

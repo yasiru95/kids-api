@@ -29,7 +29,7 @@ public function checkout()
             ]],
 
             'metadata' => [
-            'user_id' => Auth::id(),
+            'user_id' =>Auth::user()->id
             ],
 
             'mode' => 'payment',

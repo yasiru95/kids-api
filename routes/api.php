@@ -68,7 +68,7 @@ Route::get('/testcloudinary', function () {
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+})->middleware('auth.api');
 
 
 
@@ -88,10 +88,6 @@ Route::post(
     [AuthController::class, 'login']
 );
 
-Route::post('/testcheckout', [PaymentController::class, 'checkout']);
-Route::post('/webhook', [PaymentController::class, 'webhook']);
-
-
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -106,10 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::post(
-    '/stripe/webhook',
-    [PaymentController::class, 'webhook']
-    );
+    Route::post('/checkout', [PaymentController::class, 'checkout']);
+    Route::post('/webhook', [PaymentController::class, 'webhook']);
 
     Route::post('/payments', [
         PaymentController::class,

@@ -89,6 +89,7 @@ Route::post(
 );
 
 Route::post('/testcheckout', [PaymentController::class, 'checkout']);
+Route::post('/webhook', [PaymentController::class, 'webhook']);
 
 
 

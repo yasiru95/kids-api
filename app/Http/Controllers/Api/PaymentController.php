@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use Stripe\Webhook;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -20,7 +21,7 @@ public function checkout()
         $session = Session::create([
             'payment_method_types' => ['card'],
             'line_items' => [[
-                'price' => 'price_1TgTC3ELaFc0OJPAt5sRp29t',
+                'price' => config('services.stripe.Payment_ID'),
                 'quantity' => 1,
             ]],
             'mode' => 'subscription',
@@ -35,60 +36,93 @@ public function checkout()
 
     public function webhook(Request $request)
 {
-    $payload = $request->getContent();
+    Log::info('Stripe webhook received');
 
-    $sigHeader = $request->header('Stripe-Signature');
+$payload = $request->getContent();
+$sigHeader = $request->header('Stripe-Signature');
+$endpointSecret = config('services.stripe.webhook_secret');
 
-    $endpointSecret = config('services.stripe.webhook_secret');
+try {
 
-    try {
+    $event = Webhook::constructEvent(
+        $payload,
+        $sigHeader,
+        $endpointSecret
+    );
 
-        $event = Webhook::constructEvent(
-            $payload,
-            $sigHeader,
-            $endpointSecret
-        );
+    Log::info('Stripe signature verified', [
+        'event_type' => $event->type
+    ]);
 
-    } catch (\Exception $e) {
+} catch (\Exception $e) {
 
-        return response()->json([
-            'error' => 'Invalid webhook'
-        ], 400);
-    }
-
-    if (
-        $event->type ===
-        'checkout.session.completed'
-    ) {
-
-        $session = $event->data->object;
-
-        $user = \App\Models\User::where(
-            'email',
-            $session->customer_email
-        )->first();
-
-        if ($user) {
-
-            Payment::create([
-                'user_id' => $user->id,
-                'payment_id' => $session->id,
-                'transaction_id' => $session->payment_intent,
-                'amount' => 4.99,
-                'currency' => 'GBP',
-                'payment_method' => 'stripe',
-                'status' => 'paid',
-                'is_subscription' => true,
-                'start_date' => now(),
-                'end_date' => now()->addMonth(),
-            ]);
-        }
-    }
+    Log::error('Stripe webhook verification failed', [
+        'error' => $e->getMessage()
+    ]);
 
     return response()->json([
-        'success' => true
+        'error' => 'Invalid webhook'
+    ], 400);
+}
+
+if ($event->type === 'checkout.session.completed') {
+
+    Log::info('Checkout session completed');
+
+    $session = $event->data->object;
+
+    Log::info('Session details', [
+        'session_id' => $session->id ?? null,
+        'customer_email' => $session->customer_email ?? null,
+        'payment_intent' => $session->payment_intent ?? null
     ]);
+
+    $user = \App\Models\User::where(
+        'email',
+        $session->customer_email
+    )->first();
+
+    if (!$user) {
+
+        Log::warning('User not found', [
+            'email' => $session->customer_email
+        ]);
+
+        return response()->json([
+            'error' => 'User not found'
+        ]);
     }
+
+    Log::info('User found', [
+        'user_id' => $user->id,
+        'email' => $user->email
+    ]);
+
+    $payment = Payment::create([
+        'user_id' => $user->id,
+        'payment_id' => $session->id,
+        'transaction_id' => $session->payment_intent,
+        'amount' => 4.99,
+        'currency' => 'GBP',
+        'payment_method' => 'stripe',
+        'status' => 'paid',
+        'is_subscription' => true,
+        'start_date' => now(),
+        'end_date' => now()->addMonth(),
+    ]);
+
+    Log::info('Payment record created', [
+        'payment_db_id' => $payment->id,
+        'stripe_session_id' => $session->id
+    ]);
+}
+
+Log::info('Webhook processing finished');
+
+return response()->json([
+    'success' => true
+]);
+}
 
     /*
     |--------------------------------------------------------------------------

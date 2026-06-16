@@ -10,6 +10,9 @@ use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use Stripe\Webhook;
 use Illuminate\Support\Facades\Log;
+use Stripe\PaymentIntent;
+use Stripe\Charge;
+use App\Models\User;
 
 class PaymentController extends Controller
 {
@@ -24,10 +27,17 @@ public function checkout()
                 'price' => config('services.stripe.Payment_ID'),
                 'quantity' => 1,
             ]],
-            'mode' => 'subscription',
+
+            'metadata' => [
+            'user_id' => Auth::id(),
+            ],
+
+            'mode' => 'payment',
             'success_url' => url('/payment-success'),
             'cancel_url' => url('/payment-cancel'),
         ]);
+
+        
 
         return response()->json([
             'url' => $session->url,
@@ -36,7 +46,8 @@ public function checkout()
 
     public function webhook(Request $request)
 {
-    Log::info('Stripe webhook received');
+
+Log::info('Stripe webhook received');
 
 $payload = $request->getContent();
 $sigHeader = $request->header('Stripe-Signature');
@@ -65,7 +76,7 @@ try {
     ], 400);
 }
 
-if ($event->type === 'checkout.session.completed') {
+if ($event->type === 'checkout.session.completed') { // paymentDone only
 
     Log::info('Checkout session completed');
 
@@ -73,24 +84,26 @@ if ($event->type === 'checkout.session.completed') {
 
     Log::info('Session details', [
         'session_id' => $session->id ?? null,
-        'customer_email' => $session->customer_email ?? null,
-        'payment_intent' => $session->payment_intent ?? null
+        'payment_intent' => $session->payment_intent ?? null,
+        'amount_total' => $session->amount_total ?? null,
+        'currency' => $session->currency ?? null
     ]);
 
-    $user = \App\Models\User::where(
-        'email',
-        $session->customer_email
-    )->first();
+    $userId = $session->metadata->user_id ?? null;
+
+    Log::info('Retrieving user for payment', [
+        'user_id' => $userId
+    ]);
+
+    $user = User::find($userId);
 
     if (!$user) {
 
         Log::warning('User not found', [
-            'email' => $session->customer_email
+            'user_id' => $userId
         ]);
 
-        return response()->json([
-            'error' => 'User not found'
-        ]);
+      
     }
 
     Log::info('User found', [
@@ -98,22 +111,57 @@ if ($event->type === 'checkout.session.completed') {
         'email' => $user->email
     ]);
 
+    Stripe::setApiKey(config('services.stripe.secret'));
+
+    $paymentIntent = PaymentIntent::retrieve(
+        $session->payment_intent
+    );
+
+    $charge = Charge::retrieve(
+        $paymentIntent->latest_charge
+    );
+
+    $cardBrand =
+        $charge->payment_method_details->card->brand ?? 'unknown';
+
+    $cardLast4 =
+        $charge->payment_method_details->card->last4 ?? null;
+
+    Log::info('Card details retrieved', [
+        'charge' =>$charge,
+        'card_brand' => $cardBrand,
+        'card_last4' => $cardLast4,
+        'amount' => $session->amount_total / 100,
+        'currency' => strtoupper($session->currency)
+    ]);
+
     $payment = Payment::create([
         'user_id' => $user->id,
         'payment_id' => $session->id,
         'transaction_id' => $session->payment_intent,
-        'amount' => 4.99,
-        'currency' => 'GBP',
-        'payment_method' => 'stripe',
+
+        'amount' => $session->amount_total / 100,
+        'currency' => strtoupper($session->currency),
+
+        'payment_method' => $cardBrand,
         'status' => 'paid',
-        'is_subscription' => true,
+
+        'is_subscription' => false,
+
         'start_date' => now(),
         'end_date' => now()->addMonth(),
+
+        // Optional columns
+        'card_brand' => $cardBrand,
+        'card_last4' => $cardLast4,
     ]);
 
     Log::info('Payment record created', [
         'payment_db_id' => $payment->id,
-        'stripe_session_id' => $session->id
+        'amount' => $payment->amount,
+        'currency' => $payment->currency,
+        'card_brand' => $cardBrand,
+        'card_last4' => $cardLast4
     ]);
 }
 
@@ -122,6 +170,7 @@ Log::info('Webhook processing finished');
 return response()->json([
     'success' => true
 ]);
+
 }
 
     /*

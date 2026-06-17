@@ -143,7 +143,7 @@ if ($event->type === 'checkout.session.completed') { // paymentDone only
         'amount' => $session->amount_total / 100,
         'currency' => strtoupper($session->currency),
 
-        'payment_method' => $cardBrand,
+        'payment_method' => 'stripe',
         'status' => 'paid',
 
         'is_subscription' => false,

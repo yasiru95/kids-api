@@ -34,7 +34,7 @@ public function checkout()
 
             'mode' => 'payment',
             'success_url' => url('https://www.kidsstoryflix.co.uk/SucessPagePayment'),
-            'cancel_url' => url('https://www.kidsstoryflix.co.uk/ErrorPagePayment'),
+            'cancel_url' => url('https://www.kidsstoryflix.co.uk/SucessPagePayment'),
         ]);
 
         

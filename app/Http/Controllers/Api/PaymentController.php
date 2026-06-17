@@ -33,8 +33,8 @@ public function checkout()
             ],
 
             'mode' => 'payment',
-            'success_url' => url('/payment-success'),
-            'cancel_url' => url('/payment-cancel'),
+            'success_url' => url('https://www.kidsstoryflix.co.uk/SucessPagePayment'),
+            'cancel_url' => url('https://www.kidsstoryflix.co.uk/ErrorPagePayment'),
         ]);
 
         

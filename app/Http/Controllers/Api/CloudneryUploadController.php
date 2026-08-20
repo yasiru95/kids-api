@@ -9,6 +9,7 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 
 class CloudneryUploadController extends Controller
@@ -81,14 +82,19 @@ class CloudneryUploadController extends Controller
             // $fileName = $storyName . '-story-image-' . ($index + 1). '.webp';
             
             try {
+
             $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
-            $fileName!='cover'? "page-".($index + 1): 'cover'; // Use original name for cover, page-1, page-2... for others
 
+            $fileName = strtolower($fileName) === 'cover'
+            ? 'cover'
+            : 'page-' . ($index + 1);
 
-            // ✅ S3 path
+          
+
+            // // ✅ S3 path
             $filePath = "Stories/{$storyName}/images/{$fileName}";
 
-            // ✅ Upload to S3
+            // // ✅ Upload to S3
             Storage::disk('s3')->put(
             $filePath,
             $webpData,
@@ -171,10 +177,10 @@ class CloudneryUploadController extends Controller
         
 
         return response()->json([
-            'status' => true,
-            'story_name' => $storyName,
+            'status-' => true,
+            'story_name-' => $storyName,
             'count-' => count($uploadedFiles),
-            'images' => $uploadedFiles
+            'images-' => $uploadedFiles
         ]);
     }
 

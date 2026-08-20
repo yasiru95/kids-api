@@ -97,8 +97,9 @@ class CloudneryUploadController extends Controller
             );
 
             // ✅ Get S3 URL
+            $fileName!='cover'? "page-".($index + 1): 'cover'; // Use original name for cover, page-1, page-2... for others
 
-            $url ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$storyName}/images/{$fileName}";
+            $url ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$storyName}/images/{$fileName}.webp";
 
             // $url = 'https://' . config('services.s3.s3_bucket')
             // . '.s3.'

@@ -15,6 +15,8 @@ use App\Models\Sentence;
 use App\Models\Word;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
 
 class ProcessStoryJob implements ShouldQueue
 {
@@ -81,19 +83,37 @@ class ProcessStoryJob implements ShouldQueue
                 'Engine' => 'long-form',
             ]);
 
+            // Get audio content from Polly
             $audioContent = $audioResult['AudioStream']->getContents();
 
-            $audioUpload = Cloudinary::uploadApi()->upload(
-                'data:audio/mp3;base64,' . base64_encode($audioContent),
-                [
-                    'resource_type' => 'video',
-                    'folder' => "stories/{$slug}/audio",
-                    'public_id' => "{$slug}-page-{$pageNumber}",
-                    'overwrite' => true,
-                ]
+            // S3 path
+            $filePath = "Stories/{$slug}/audio/page-{$pageNumber}.mp3";
+
+            // Upload MP3 to S3
+            $audioUpload = Storage::disk('s3')->put(
+            $filePath,
+            $audioContent,
+            [
+            'ContentType' => 'audio/mpeg',
+            'CacheControl' => 'public, max-age=31536000',
+            ]
             );
 
-            $audioUrl = $audioUpload['secure_url'];
+
+
+            $audioUrl ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$slug}/audio/page-{$pageNumber}";
+
+
+            // $audioUpload = Cloudinary::uploadApi()->upload(
+            //     'data:audio/mp3;base64,' . base64_encode($audioContent),
+            //     [
+            //         'resource_type' => 'video',
+            //         'folder' => "stories/{$slug}/audio",
+            //         'public_id' => "{$slug}-page-{$pageNumber}",
+            //         'overwrite' => true,
+            //     ]
+            // );
+
 
             // Log::info("Generated audio for page {$pageNumber}", ['audio_url' => $audioUrl]);
       
@@ -189,19 +209,39 @@ class ProcessStoryJob implements ShouldQueue
 
         Log::info('Generated JSON for story', ['json_length' => strlen($json)]);
 
+
+
+
         
        try{
-         $uploaded = Cloudinary::uploadApi()->upload(
-        'data:application/json;base64,' . base64_encode($json),
-        // json_encode([$story], JSON_PRETTY_PRINT ),
-        [
-        'resource_type' => 'raw',
-        'folder' => "stories/{$slug}",
-        'public_id' => "{$slug}.json",
-        'format' => 'json',
-        'overwrite' => true,
-        ]
-        );
+
+
+            // S3 path
+            $jsonPath = "Stories/{$slug}/{$slug}.json";
+
+            // Upload JSON to S3
+            $uploaded = Storage::disk('s3')->put(
+            $jsonPath,
+            $json,
+            [
+            'ContentType' => 'application/json',
+            'CacheControl' => 'public, max-age=31536000',
+            ]
+            );
+
+           $jsonUrl ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$slug}/{$slug}.json";
+
+        //  $uploaded = Cloudinary::uploadApi()->upload(
+        // 'data:application/json;base64,' . base64_encode($json),
+        // // json_encode([$story], JSON_PRETTY_PRINT ),
+        // [
+        // 'resource_type' => 'raw',
+        // 'folder' => "stories/{$slug}",
+        // 'public_id' => "{$slug}.json",
+        // 'format' => 'json',
+        // 'overwrite' => true,
+        // ]
+        // );
        }catch(\Throwable $th){
         return response()->json([
             'success' => false,
@@ -209,7 +249,7 @@ class ProcessStoryJob implements ShouldQueue
         ], 500);
        }
          Log::info('JSON file uploaded', [
-          'url' => $uploaded['secure_url']
+          'url' => $jsonUrl
          ]);
             }
 

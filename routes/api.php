@@ -130,11 +130,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-Route::post('/upload-story-images', [CloudneryUploadController::class, 'upload_images']);
+Route::post('/upload-story-images', [CloudneryUploadController::class, 'upload_images']); //
 Route::post('/upload-story-audio', [CloudneryUploadController::class, 'uploadAudio']);
 
 Route::post('/stories/import', [StoryImportController::class, 'import']);
 Route::post('/stories/upload-story', [StoryImportController::class, 'create_story_json']);
-Route::post('/stories/generate-story', [StoryImportController::class, 'generateStoryJSON']);    
+Route::post('/stories/generate-story', [StoryImportController::class, 'generateStoryJSON']);   //  
  
 

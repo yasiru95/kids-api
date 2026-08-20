@@ -48,5 +48,10 @@ return [
     'Payment_ID' => env('STRIPE_PAY_ID'),
     ],
 
+    's3' => [
+    's3_bucket' => env('AWS_S3_BUCKET'),
+    'region' => env('AWS_S3_REGION'),
+    ]
+
 
 ];

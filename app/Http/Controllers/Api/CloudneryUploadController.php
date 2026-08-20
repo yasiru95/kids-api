@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Storage;
+
 
 class CloudneryUploadController extends Controller
 {
@@ -81,42 +83,68 @@ class CloudneryUploadController extends Controller
             try {
             $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
 
-            // ✅ Upload to Cloudinary 
-            $uploaded = Cloudinary::uploadApi()->upload(
-            // $image->getRealPath(),
-              'data:image/webp;base64,' . base64_encode($webpData),
-            [
+            // ✅ S3 path
+            $filePath = "Stories/{$storyName}/images/{$fileName}";
 
-            'folder' => "stories/{$storyName}/images",
-            'public_id' =>$fileName!='cover'? "page-".($index + 1): 'cover', // Use original name for cover, page-1, page-2... for others
-            'format' => 'webp',
-            'overwrite' => true,
-            'quality' => 'auto',
-            'fetch_format' => 'webp',
+            // ✅ Upload to S3
+            Storage::disk('s3')->put(
+            $filePath,
+            $webpData,
+            [
+            'ContentType' => 'image/webp',
+            'CacheControl' => 'public, max-age=31536000'
+            ]
+            );
+
+            // ✅ Get S3 URL
+
+            $url ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$storyName}/images/{$fileName}";
+
+            // $url = 'https://' . config('services.s3.s3_bucket')
+            // . '.s3.'
+            // . config('services.s3.region')
+            // . '.amazonaws.com/'
+            // . $filePath;
+
+            $uploadedFiles[] = $url;
+
+
+            // // ✅ Upload to Cloudinary 
+            // $uploaded = Cloudinary::uploadApi()->upload(
+            // // $image->getRealPath(),
+            //   'data:image/webp;base64,' . base64_encode($webpData),
+            // [
+
+            // 'folder' => "stories/{$storyName}/images",
+            // 'public_id' =>$fileName!='cover'? "page-".($index + 1): 'cover', // Use original name for cover, page-1, page-2... for others
+            // 'format' => 'webp',
+            // 'overwrite' => true,
+            // 'quality' => 'auto',
+            // 'fetch_format' => 'webp',
                 
 
-            // ✅ Tags
-            'tags' => [
-            'kids-story',
-             $storyName,
-            'storybook'
-            ],
+            // // ✅ Tags
+            // 'tags' => [
+            // 'kids-story',
+            //  $storyName,
+            // 'storybook'
+            // ],
 
-            // ✅ Context metadata
-            'context' => [
-            'alt' => $request->story_name,
-            'caption' => "Story image " . ($index + 1),
-            'story' => $storyName
-            ],
+            // // ✅ Context metadata
+            // 'context' => [
+            // 'alt' => $request->story_name,
+            // 'caption' => "Story image " . ($index + 1),
+            // 'story' => $storyName
+            // ],
 
          
             
             
-            ] 
+            // ] 
             
             
             
-            );
+            // );
             } catch (\Throwable $th) {
                 return response()->json([
                     'status' => false,
@@ -128,7 +156,7 @@ class CloudneryUploadController extends Controller
             
 
             // ✅ Secure URL 
-            $uploadedFiles[] = $uploaded['secure_url'];
+            // $uploadedFiles[] = $uploaded['secure_url'];
             // Full path
             // $filePath = $folderPath . '/' . $fileName;
 
@@ -143,7 +171,7 @@ class CloudneryUploadController extends Controller
         return response()->json([
             'status' => true,
             'story_name' => $storyName,
-            'count' => count($uploadedFiles),
+            'count-' => count($uploadedFiles),
             'images' => $uploadedFiles
         ]);
     }

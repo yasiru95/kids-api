@@ -82,6 +82,8 @@ class CloudneryUploadController extends Controller
             
             try {
             $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $fileName!='cover'? "page-".($index + 1): 'cover'; // Use original name for cover, page-1, page-2... for others
+
 
             // ✅ S3 path
             $filePath = "Stories/{$storyName}/images/{$fileName}";
@@ -97,7 +99,6 @@ class CloudneryUploadController extends Controller
             );
 
             // ✅ Get S3 URL
-            $fileName!='cover'? "page-".($index + 1): 'cover'; // Use original name for cover, page-1, page-2... for others
 
             $url ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$storyName}/images/{$fileName}.webp";
 

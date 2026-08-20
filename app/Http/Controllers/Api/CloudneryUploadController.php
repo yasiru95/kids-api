@@ -106,7 +106,7 @@ class CloudneryUploadController extends Controller
 
             // ✅ Get S3 URL
 
-            $url ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$storyName}/images/{$fileName}.webp";
+            $url ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$storyName}/images/{$fileName}";
 
             // $url = 'https://' . config('services.s3.s3_bucket')
             // . '.s3.'

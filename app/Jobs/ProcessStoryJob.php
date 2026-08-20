@@ -101,7 +101,7 @@ class ProcessStoryJob implements ShouldQueue
 
 
 
-            $audioUrl ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$slug}/audio/page-{$pageNumber}";
+            $audioUrl ="https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/Stories/{$slug}/audio/page-{$pageNumber}.mp3";
 
 
             // $audioUpload = Cloudinary::uploadApi()->upload(

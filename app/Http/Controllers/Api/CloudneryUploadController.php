@@ -49,7 +49,6 @@ class CloudneryUploadController extends Controller
 
         foreach ($images as $index => $image) {
 
-            $index =$index+1;
 
             if (!$image) {
                 continue;
@@ -89,7 +88,7 @@ class CloudneryUploadController extends Controller
 
             $fileName = strtolower($fileName) === 'cover'
             ? 'cover'
-            : 'page-' . ($index );
+            : 'page-' . $index;
 
           
 

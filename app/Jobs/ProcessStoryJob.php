@@ -168,8 +168,8 @@ class ProcessStoryJob implements ShouldQueue
 
                     $words[] = [
                         'text' => $current['text'],
-                        'start' => round($current['time'] / 1000, 3),
-                        'end' => round(($next['time'] ?? ($current['time'] + 500)) / 1000, 3),
+                        'start' => round($current['time'] , 3),
+                        'end' => round(($next['time'] ?? ($current['time'] + 500)) , 3),
                     ];
 
                     $wordIndex++;

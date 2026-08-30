@@ -76,6 +76,8 @@ class ProcessStoryJob implements ShouldQueue
             | 1. AUDIO GENERATION
             |-----------------------------------
             */
+
+            
             $audioResult = $polly->synthesizeSpeech([
                 'Text' => $pageText,
                 'OutputFormat' => 'mp3',

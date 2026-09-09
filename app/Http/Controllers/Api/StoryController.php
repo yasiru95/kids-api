@@ -20,6 +20,7 @@ class StoryController extends Controller
         return Story::select(
             'id',
             'title',
+            'slug',
             'description',
             'image'
         )->get();
@@ -39,7 +40,6 @@ class StoryController extends Controller
         // GET SINGLE STORY Slug
     public function showSlug($slug)
     {
-        $slug = Str::slug($slug);
         $story = Story::with([
             'pages.sentences.words'
         ])->where('slug', $slug)->firstOrFail();

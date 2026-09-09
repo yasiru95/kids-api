@@ -9,6 +9,7 @@ use App\Http\Resources\StoryWordResource;
 use App\Http\Resources\StorySentenceResource;
 use App\Http\Resources\StoryPageResource;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StoryController extends Controller
 {
@@ -31,6 +32,17 @@ class StoryController extends Controller
         $story = Story::with([
             'pages.sentences.words'
         ])->findOrFail($id);
+
+        return new StoryResource($story);
+    }
+
+        // GET SINGLE STORY Slug
+    public function showSlug($slug)
+    {
+        $slug = Str::slug($slug);
+        $story = Story::with([
+            'pages.sentences.words'
+        ])->where('slug', $slug)->firstOrFail();
 
         return new StoryResource($story);
     }

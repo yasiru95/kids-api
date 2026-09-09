@@ -287,6 +287,7 @@ class ProcessStoryJob implements ShouldQueue
 
             $story = Story::create([
                 'title' => $storyData['title'],
+                'slug' => Str::slug($storyData['title']),
                 'description' => $storyData['description'],
                 'image' => $storyData['image'],
 

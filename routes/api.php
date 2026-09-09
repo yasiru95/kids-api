@@ -76,6 +76,9 @@ Route::get('/stories', [StoryController::class, 'index']);
 
 Route::get('/stories/{id}', [StoryController::class, 'show']);
 
+Route::get('/stories/name/{slug}', [StoryController::class, 'showSlug']);
+
+
 
 
 Route::post(

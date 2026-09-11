@@ -88,7 +88,7 @@ class CloudneryUploadController extends Controller
 
             $fileName = strtolower($fileName) === 'cover'
             ? 'cover'
-            : 'page-' . $index+1;
+            : 'page-' . ($index+1);
 
           
 

@@ -1,33 +1,25 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\Story;
-use App\Models\StoryPage;
-use App\Models\Sentence;
-use App\Models\Word;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\File;
-use Aws\Polly\PollyClient;
-use App\Services\PollyService;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Jobs\GenerateStoryJob;
-use App\Jobs\ProcessStoryJob;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class StoryImportController extends Controller
 {
+    public function generateStoryJSON(Request $request)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | 1. Validate request
+        |--------------------------------------------------------------------------
+        */
 
-public function generateStoryJSON(Request $request)
-{
-
- try {
+        try {
 
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
@@ -48,6 +40,12 @@ public function generateStoryJSON(Request $request)
             ], 422);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Get uploaded file
+        |--------------------------------------------------------------------------
+        */
+
         try {
 
             $file = $request->file('storyFile');
@@ -62,7 +60,7 @@ public function generateStoryJSON(Request $request)
 
             /*
             |--------------------------------------------------------------------------
-            | Read TXT file
+            | 3. Read story text
             |--------------------------------------------------------------------------
             */
 
@@ -78,7 +76,9 @@ public function generateStoryJSON(Request $request)
                 ], 422);
             }
 
-            if (trim($storyText) === '') {
+            $storyText = trim($storyText);
+
+            if ($storyText === '') {
 
                 return response()->json([
                     'success' => false,
@@ -88,7 +88,7 @@ public function generateStoryJSON(Request $request)
 
             /*
             |--------------------------------------------------------------------------
-            | Create unique import ID
+            | 4. Create unique import ID
             |--------------------------------------------------------------------------
             */
 
@@ -96,23 +96,88 @@ public function generateStoryJSON(Request $request)
 
             /*
             |--------------------------------------------------------------------------
-            | Store story text
+            | 5. Temporary S3 file
             |--------------------------------------------------------------------------
             |
-            | Do NOT put the entire story inside the queue payload.
+            | This file is temporary.
             |
+            | Example:
+            |
+            | temp/story-imports/uuid.txt
+            |
+            |--------------------------------------------------------------------------
             */
 
-            $filePath = "story-imports/{$importId}.txt";
-
-            Storage::disk('local')->put(
-                $filePath,
-                $storyText
-            );
+            $filePath = "temp/story-imports/{$importId}.txt";
 
             /*
             |--------------------------------------------------------------------------
-            | Queue payload
+            | 6. Save story text to S3
+            |--------------------------------------------------------------------------
+            */
+
+            $saved = Storage::disk('s3')->put(
+                $filePath,
+                $storyText,
+                [
+                    'ContentType' => 'text/plain',
+                ]
+            );
+
+            if (!$saved) {
+
+                Log::error('Failed to save temporary story file to S3', [
+                    'import_id' => $importId,
+                    'file_path' => $filePath,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to save story file.',
+                ], 500);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 7. Verify S3 file exists
+            |--------------------------------------------------------------------------
+            */
+
+            $exists = Storage::disk('s3')->exists($filePath);
+
+            if (!$exists) {
+
+                Log::error('Temporary story file was not found after upload', [
+                    'import_id' => $importId,
+                    'file_path' => $filePath,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Temporary story file could not be verified.',
+                ], 500);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 8. Log successful upload
+            |--------------------------------------------------------------------------
+            */
+
+            Log::info('Temporary story uploaded to S3', [
+                'import_id' => $importId,
+                'file_path' => $filePath,
+                'size' => strlen($storyText),
+            ]);
+
+            /*
+            |--------------------------------------------------------------------------
+            | 9. Queue payload
+            |--------------------------------------------------------------------------
+            |
+            | We DO NOT put the complete story text into the queue.
+            |
+            | We only send the S3 path.
             |--------------------------------------------------------------------------
             */
 
@@ -125,15 +190,20 @@ public function generateStoryJSON(Request $request)
 
             /*
             |--------------------------------------------------------------------------
-            | Dispatch background job
+            | 10. Dispatch queue job
             |--------------------------------------------------------------------------
             */
 
             GenerateStoryJob::dispatch($payload);
 
+            Log::info('GenerateStoryJob dispatched', [
+                'import_id' => $importId,
+                'file_path' => $filePath,
+            ]);
+
             /*
             |--------------------------------------------------------------------------
-            | Return immediately
+            | 11. Return immediately
             |--------------------------------------------------------------------------
             */
 
@@ -156,77 +226,5 @@ public function generateStoryJSON(Request $request)
                 'message' => 'Failed to start story processing.',
             ], 500);
         }
-
-
-//    try {
-//         $validated = $request->validate([
-//             'title' => 'required|string|max:255',
-//             'description' => 'required|string',
-//             'storyFile' => 'required|file|mimes:txt|max:5120', // max 5MB text file
-//         ]);
-//     } catch (\Illuminate\Validation\ValidationException $e) {
-//         Log::error('Validation failed: ' . json_encode($e->errors()));
-//         return response()->json([
-//             'success' => false,
-//             'message' => 'Validation failed',
-//             'errors' => $e->errors()
-//         ], 422);
-//     }
-
-//     $file = $request->file('storyFile');
-
-//     if (!$file) {
-//     return response()->json([
-//         'success' => false,
-//         'message' => 'storyFile is missing in request'
-//     ], 422);
-//     }
-
-//     $storyText= file_get_contents($file->getRealPath());
-
-//     // ✅ CLEAN PAYLOAD FOR JOB
-//     $payload = [
-//         'title' => $validated['title'],
-//         'description' => $validated['description'],
-//         'story' => $storyText,
-//     ];
-
-
-    
-
-//     GenerateStoryJob::dispatch($payload);
-
-//     return response()->json([
-//         'success' => true,
-//         'message' => 'Story is being processed in background queue.......'
-//     ]);
-}
-
-
-
-
-
-    
-       
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-    
+    }
 }

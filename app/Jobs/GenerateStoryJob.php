@@ -18,132 +18,214 @@ class GenerateStoryJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    // public $tries = 2;
+    /*
+    |--------------------------------------------------------------------------
+    | Retry settings
+    |--------------------------------------------------------------------------
+    */
 
-    // public $timeout = 900;
+    public int $tries = 3;
 
-    // public $backoff = [30, 60];
+    public int $timeout = 120;
 
     protected array $validated;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    */
 
     public function __construct(array $validated)
     {
         $this->validated = $validated;
     }
 
-   public function handle(): void
-{
-    $importId = $this->validated['import_id'] ?? null;
-    $filePath = $this->validated['file_path'] ?? null;
-
-    Log::info('GenerateStoryJob started', [
-        'import_id' => $importId,
-        'title' => $this->validated['title'] ?? null,
-        'file_path' => $filePath,
-        'local_root' => config('filesystems.disks.local.root'),
-        'full_path' => $filePath
-            ? Storage::disk('local')->path($filePath)
-            : null,
-    ]);
-
-    if (!$filePath) {
-        throw new \Exception(
-            'Temporary story file path is missing.'
-        );
-    }
-
     /*
     |--------------------------------------------------------------------------
-    | Check temporary file
+    | Handle job
     |--------------------------------------------------------------------------
     */
 
-    $exists = Storage::disk('local')->exists($filePath);
-
-    Log::info('Temporary file check', [
-        'import_id' => $importId,
-        'file_path' => $filePath,
-        'exists' => $exists,
-        'full_path' => Storage::disk('local')->path($filePath),
-        'local_root' => config('filesystems.disks.local.root'),
-    ]);
-
-    if (!$exists) {
-        throw new \Exception(
-            "Temporary story file not found: {$filePath}"
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Read story
-    |--------------------------------------------------------------------------
-    */
-
-    $storyText = Storage::disk('local')->get($filePath);
-
-    if (trim($storyText) === '') {
-        throw new \Exception(
-            'Temporary story file is empty.'
-        );
-    }
-
-    Log::info('Temporary story file read successfully', [
-        'import_id' => $importId,
-        'characters' => strlen($storyText),
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dispatch ProcessStoryJob
-    |--------------------------------------------------------------------------
-    */
-
-    ProcessStoryJob::dispatch([
-        'import_id' => $importId,
-        'title' => $this->validated['title'],
-        'description' => $this->validated['description'],
-        'story' => $storyText,
-    ]);
-
-    Log::info('ProcessStoryJob dispatched', [
-        'import_id' => $importId,
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete temporary file
-    |--------------------------------------------------------------------------
-    */
-
-    Storage::disk('local')->delete($filePath);
-
-    Log::info('Temporary story file deleted', [
-        'import_id' => $importId,
-        'file_path' => $filePath,
-    ]);
-}
-
-    /**
-     * Handle permanent job failure.
-     */
-    public function failed(Throwable $exception): void
+    public function handle(): void
     {
-        Log::error('GenerateStoryJob failed', [
-            'import_id' => $this->validated['import_id'] ?? null,
+        $importId = $this->validated['import_id'] ?? null;
+
+        $filePath = $this->validated['file_path'] ?? null;
+
+        Log::info('GenerateStoryJob started', [
+            'import_id' => $importId,
             'title' => $this->validated['title'] ?? null,
-            'file_path' => $this->validated['file_path'] ?? null,
-            'message' => $exception->getMessage(),
+            'file_path' => $filePath,
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Do NOT delete the temporary file here.
+        | 1. Check file path
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$filePath) {
+
+            throw new \Exception(
+                'Temporary story file path is missing.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Check S3 file
+        |--------------------------------------------------------------------------
+        */
+
+        $exists = Storage::disk('s3')->exists($filePath);
+
+        Log::info('Temporary S3 file check', [
+            'import_id' => $importId,
+            'file_path' => $filePath,
+            'exists' => $exists,
+        ]);
+
+        if (!$exists) {
+
+            throw new \Exception(
+                "Temporary story file not found in S3: {$filePath}"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Read story from S3
+        |--------------------------------------------------------------------------
+        */
+
+        $storyText = Storage::disk('s3')->get($filePath);
+
+        if (!$storyText) {
+
+            throw new \Exception(
+                'Temporary story file is empty.'
+            );
+        }
+
+        $storyText = trim($storyText);
+
+        if ($storyText === '') {
+
+            throw new \Exception(
+                'Temporary story file contains no text.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Log successful read
+        |--------------------------------------------------------------------------
+        */
+
+        Log::info('Temporary story file read successfully', [
+            'import_id' => $importId,
+            'characters' => strlen($storyText),
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5. Prepare ProcessStoryJob payload
+        |--------------------------------------------------------------------------
+        */
+
+        $processPayload = [
+            'import_id' => $importId,
+
+            'title' => $this->validated['title'],
+
+            'description' => $this->validated['description'],
+
+            'story' => $storyText,
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Dispatch ProcessStoryJob
+        |--------------------------------------------------------------------------
+        */
+
+        ProcessStoryJob::dispatch($processPayload);
+
+        Log::info('ProcessStoryJob dispatched', [
+            'import_id' => $importId,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 7. Delete temporary S3 file
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+
+            Storage::disk('s3')->delete($filePath);
+
+            Log::info('Temporary S3 story file deleted', [
+                'import_id' => $importId,
+                'file_path' => $filePath,
+            ]);
+
+        } catch (Throwable $e) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Do not fail the story because temporary cleanup failed.
+            |--------------------------------------------------------------------------
+            */
+
+            Log::warning(
+                'Could not delete temporary story file',
+                [
+                    'import_id' => $importId,
+                    'file_path' => $filePath,
+                    'message' => $e->getMessage(),
+                ]
+            );
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Failed job
+    |--------------------------------------------------------------------------
+    */
+
+    public function failed(Throwable $exception): void
+    {
+        Log::error('GenerateStoryJob failed', [
+
+            'import_id' =>
+                $this->validated['import_id'] ?? null,
+
+            'title' =>
+                $this->validated['title'] ?? null,
+
+            'file_path' =>
+                $this->validated['file_path'] ?? null,
+
+            'message' =>
+                $exception->getMessage(),
+
+            'trace' =>
+                $exception->getTraceAsString(),
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTANT
         |--------------------------------------------------------------------------
         |
-        | If GenerateStoryJob fails before ProcessStoryJob is dispatched,
-        | the temporary TXT can still be inspected/recovered.
+        | Do NOT delete the temporary S3 file here.
         |
+        | Keeping it allows you to inspect/retry/debug the failed story.
+        |
+        |--------------------------------------------------------------------------
         */
     }
 }

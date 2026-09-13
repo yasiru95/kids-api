@@ -8,6 +8,7 @@ class Story extends Model
 {
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'image',
         'category',

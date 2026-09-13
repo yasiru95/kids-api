@@ -1,12 +1,24 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Jobs\GenerateStoryJob;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
+use App\Models\Story;
+use App\Models\StoryPage;
+use App\Models\Sentence;
+use App\Models\Word;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
+use Aws\Polly\PollyClient;
+use App\Services\PollyService;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Jobs\GenerateStoryJob;
+use App\Jobs\ProcessStoryJob;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class StoryImportController extends Controller

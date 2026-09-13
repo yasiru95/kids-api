@@ -31,99 +31,98 @@ class GenerateStoryJob implements ShouldQueue
         $this->validated = $validated;
     }
 
-    public function handle(): void
-    {
-        $importId = $this->validated['import_id'] ?? null;
-        $filePath = $this->validated['file_path'] ?? null;
+   public function handle(): void
+{
+    $importId = $this->validated['import_id'] ?? null;
+    $filePath = $this->validated['file_path'] ?? null;
 
-        Log::info('GenerateStoryJob started', [
-            'import_id' => $importId,
-            'title' => $this->validated['title'] ?? null,
-            'file_path' => $filePath,
-        ]);
+    Log::info('GenerateStoryJob started', [
+        'import_id' => $importId,
+        'title' => $this->validated['title'] ?? null,
+        'file_path' => $filePath,
+        'local_root' => config('filesystems.disks.local.root'),
+        'full_path' => $filePath
+            ? Storage::disk('local')->path($filePath)
+            : null,
+    ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | 1. Check temporary file
-        |--------------------------------------------------------------------------
-        */
-
-        if (!$filePath) {
-            throw new \Exception(
-                'Temporary story file path is missing.'
-            );
-        }
-
-        if (!Storage::disk('local')->exists($filePath)) {
-            throw new \Exception(
-                "Temporary story file not found: {$filePath}"
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Read story TXT
-        |--------------------------------------------------------------------------
-        */
-
-        $storyText = Storage::disk('local')->get($filePath);
-
-        if (trim($storyText) === '') {
-            throw new \Exception(
-                'Temporary story file is empty.'
-            );
-        }
-
-        Log::info('Temporary story file read successfully', [
-            'import_id' => $importId,
-            'characters' => strlen($storyText),
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 3. Prepare ProcessStoryJob payload
-        |--------------------------------------------------------------------------
-        */
-
-        $processPayload = [
-            'import_id' => $importId,
-            'title' => $this->validated['title'],
-            'description' => $this->validated['description'],
-            'story' => $storyText,
-        ];
-
-        /*
-        |--------------------------------------------------------------------------
-        | 4. Dispatch ProcessStoryJob
-        |--------------------------------------------------------------------------
-        */
-
-        ProcessStoryJob::dispatch(
-            $processPayload
+    if (!$filePath) {
+        throw new \Exception(
+            'Temporary story file path is missing.'
         );
-
-        Log::info('ProcessStoryJob dispatched', [
-            'import_id' => $importId,
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 5. Delete temporary TXT
-        |--------------------------------------------------------------------------
-        |
-        | The story text has now been passed to ProcessStoryJob.
-        |
-        */
-
-        Storage::disk('local')->delete(
-            $filePath
-        );
-
-        Log::info('Temporary story file deleted', [
-            'import_id' => $importId,
-            'file_path' => $filePath,
-        ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Check temporary file
+    |--------------------------------------------------------------------------
+    */
+
+    $exists = Storage::disk('local')->exists($filePath);
+
+    Log::info('Temporary file check', [
+        'import_id' => $importId,
+        'file_path' => $filePath,
+        'exists' => $exists,
+        'full_path' => Storage::disk('local')->path($filePath),
+        'local_root' => config('filesystems.disks.local.root'),
+    ]);
+
+    if (!$exists) {
+        throw new \Exception(
+            "Temporary story file not found: {$filePath}"
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Read story
+    |--------------------------------------------------------------------------
+    */
+
+    $storyText = Storage::disk('local')->get($filePath);
+
+    if (trim($storyText) === '') {
+        throw new \Exception(
+            'Temporary story file is empty.'
+        );
+    }
+
+    Log::info('Temporary story file read successfully', [
+        'import_id' => $importId,
+        'characters' => strlen($storyText),
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dispatch ProcessStoryJob
+    |--------------------------------------------------------------------------
+    */
+
+    ProcessStoryJob::dispatch([
+        'import_id' => $importId,
+        'title' => $this->validated['title'],
+        'description' => $this->validated['description'],
+        'story' => $storyText,
+    ]);
+
+    Log::info('ProcessStoryJob dispatched', [
+        'import_id' => $importId,
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete temporary file
+    |--------------------------------------------------------------------------
+    */
+
+    Storage::disk('local')->delete($filePath);
+
+    Log::info('Temporary story file deleted', [
+        'import_id' => $importId,
+        'file_path' => $filePath,
+    ]);
+}
 
     /**
      * Handle permanent job failure.

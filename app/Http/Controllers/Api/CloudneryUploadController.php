@@ -86,6 +86,8 @@ class CloudneryUploadController extends Controller
 
             $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
 
+            
+
             $fileName = strtolower($fileName) === 'cover'
             ? 'cover'
             : 'page-' . ($index+1);

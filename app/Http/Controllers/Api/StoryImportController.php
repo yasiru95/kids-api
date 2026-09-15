@@ -4,22 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
-use App\Models\Story;
-use App\Models\StoryPage;
-use App\Models\Sentence;
-use App\Models\Word;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\File;
-use Aws\Polly\PollyClient;
-use App\Services\PollyService;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use App\Jobs\GenerateStoryJob;
-use App\Jobs\ProcessStoryJob;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+
+use App\Jobs\GenerateStoryJob;
 
 class StoryImportController extends Controller
 {
@@ -30,6 +20,10 @@ class StoryImportController extends Controller
         | 1. Validate request
         |--------------------------------------------------------------------------
         */
+
+        Log::info('Validating story import request', [
+            'request' => $request->all(),
+        ]);
 
         try {
 
@@ -52,13 +46,13 @@ class StoryImportController extends Controller
             ], 422);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. Get uploaded file
-        |--------------------------------------------------------------------------
-        */
-
         try {
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. Get uploaded file
+            |--------------------------------------------------------------------------
+            */
 
             $file = $request->file('storyFile');
 
@@ -108,28 +102,20 @@ class StoryImportController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 5. Temporary S3 file
-            |--------------------------------------------------------------------------
-            |
-            | This file is temporary.
-            |
-            | Example:
-            |
-            | temp/story-imports/uuid.txt
-            |
+            | 5. Temporary S3 path
             |--------------------------------------------------------------------------
             */
 
-            $filePath = "temp/story-imports/{$importId}.txt";
+            $storyPath = "temp/story-imports/{$importId}.txt";
 
             /*
             |--------------------------------------------------------------------------
-            | 6. Save story text to S3
+            | 6. Upload story text to S3
             |--------------------------------------------------------------------------
             */
 
             $saved = Storage::disk('s3')->put(
-                $filePath,
+                $storyPath,
                 $storyText,
                 [
                     'ContentType' => 'text/plain',
@@ -140,7 +126,7 @@ class StoryImportController extends Controller
 
                 Log::error('Failed to save temporary story file to S3', [
                     'import_id' => $importId,
-                    'file_path' => $filePath,
+                    'story_path' => $storyPath,
                 ]);
 
                 return response()->json([
@@ -151,17 +137,15 @@ class StoryImportController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 7. Verify S3 file exists
+            | 7. Verify S3 upload
             |--------------------------------------------------------------------------
             */
 
-            $exists = Storage::disk('s3')->exists($filePath);
-
-            if (!$exists) {
+            if (!Storage::disk('s3')->exists($storyPath)) {
 
                 Log::error('Temporary story file was not found after upload', [
                     'import_id' => $importId,
-                    'file_path' => $filePath,
+                    'story_path' => $storyPath,
                 ]);
 
                 return response()->json([
@@ -172,45 +156,51 @@ class StoryImportController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 8. Log successful upload
+            | 8. Log upload
             |--------------------------------------------------------------------------
             */
 
             Log::info('Temporary story uploaded to S3', [
                 'import_id' => $importId,
-                'file_path' => $filePath,
+                'story_path' => $storyPath,
                 'size' => strlen($storyText),
             ]);
 
             /*
             |--------------------------------------------------------------------------
-            | 9. Queue payload
+            | 9. Dispatch GenerateStoryJob
             |--------------------------------------------------------------------------
             |
-            | We DO NOT put the complete story text into the queue.
+            | IMPORTANT:
             |
-            | We only send the S3 path.
+            | Do NOT send $payload array.
+            |
+            | The GenerateStoryJob constructor expects:
+            |
+            | importId
+            | title
+            | description
+            | storyPath
+            |
             |--------------------------------------------------------------------------
             */
 
-            $payload = [
-                'import_id' => $importId,
-                'title' => $validated['title'],
-                'description' => $validated['description'],
-                'file_path' => $filePath,
-            ];
+            GenerateStoryJob::dispatch(
+                importId: $importId,
+                title: $validated['title'],
+                description: $validated['description'],
+                storyPath: $storyPath
+            );
 
             /*
             |--------------------------------------------------------------------------
-            | 10. Dispatch queue job
+            | 10. Log job
             |--------------------------------------------------------------------------
             */
 
-            GenerateStoryJob::dispatch($payload);
-
             Log::info('GenerateStoryJob dispatched', [
                 'import_id' => $importId,
-                'file_path' => $filePath,
+                'story_path' => $storyPath,
             ]);
 
             /*

@@ -13,7 +13,6 @@ use App\Models\Story;
 use App\Models\StoryPage;
 use App\Models\Sentence;
 use App\Models\Word;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 

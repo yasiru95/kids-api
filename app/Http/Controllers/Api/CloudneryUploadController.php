@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
@@ -209,35 +208,28 @@ public function uploadAudio(Request $request)
 
     $audioFile = $request->file('audio');
 
-    $fileName = $storyName . '-audio-' . time();
+    $fileName = $storyName . '-audio-' . time() . '.' . $audioFile->getClientOriginalExtension();
 
     try {
+        $audioContent = file_get_contents($audioFile->getRealPath());
 
-        // ✅ Upload to Cloudinary
+        $path = "Stories/{$storyName}/audio/{$fileName}";
 
-        $uploaded = Cloudinary::uploadApi()->upload(
-            $audioFile->getRealPath(),
+        Storage::disk('s3')->put(
+            $path,
+            $audioContent,
             [
-                'resource_type' => 'video', // IMPORTANT for mp3/audio in Cloudinary
-                'folder' => "stories/{$storyName}/audio",
-                'public_id' => $fileName,
-
-                // Optional optimizations
-                'overwrite' => true,
-                'format' => 'mp3',
-
-                // Metadata
-                'context' => [
-                    'story' => $storyName,
-                    'type' => 'audio'
-                ]
+                'ContentType' => $audioFile->getMimeType(),
+                'CacheControl' => 'public, max-age=31536000',
             ]
         );
+
+        $audioUrl = "https://kidsstoryflix-images.s3.us-east-1.amazonaws.com/{$path}";
 
         return response()->json([
             'status' => true,
             'story_name' => $storyName,
-            'audio_url' => $uploaded['secure_url']
+            'audio_url' => $audioUrl
         ]);
 
     } catch (\Throwable $th) {

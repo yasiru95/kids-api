@@ -7,9 +7,10 @@ use App\Http\Controllers\Api\StoryImportController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\CloudneryUploadController;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Api\QueueController;
+
 
 Route::get('/polly', function () {
     $polly = new \Aws\Polly\PollyClient([
@@ -56,13 +57,6 @@ Route::get('/db-check', function () {
             'error' => $e->getMessage()
         ]);
     }
-});
-
-
-Route::get('/testcloudinary', function () {
-    return Cloudinary::uploadApi()->upload(
-        "https://res.cloudinary.com/demo/image/upload/sample.jpg"
-    );
 });
 
 
@@ -139,5 +133,13 @@ Route::post('/upload-story-audio', [CloudneryUploadController::class, 'uploadAud
 Route::post('/stories/import', [StoryImportController::class, 'import']);
 Route::post('/stories/upload-story', [StoryImportController::class, 'create_story_json']);
 Route::post('/stories/generate-story', [StoryImportController::class, 'generateStoryJSON']);   //  
- 
+
+
+
+
+Route::get('/jobs', [QueueController::class, 'jobs']);
+Route::get('/failed-jobs', [QueueController::class, 'failedJobs']);
+Route::get('/failed-jobs/{uuid}', [QueueController::class, 'failedJob']);
+
+Route::delete('/stories/{id}', [StoryController::class, 'destroy']);
 
